@@ -1,7 +1,10 @@
 'use client';
 
 import { useCallback, useRef, useState, type FormEvent, type MouseEvent } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+import { AccountMenu, Avatar } from '@/components/account-menu';
+import { ProfileSettings } from '@/components/profile-settings';
+import { profileName, type Profile } from '@/lib/profile';
 import { BriefcaseBusiness, Camera, CircleDollarSign, ClipboardList, Hammer, Home, LogOut, Plus, Sparkles, ArrowUpRight, ChevronRight, Search, X, FolderOpen, UserRound, Wallet, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PriceList } from '@/components/price-list';
@@ -22,23 +25,29 @@ const money = (amount: number) => {
 };
 const fieldClass = 'workspace-input';
 
-export function Dashboard({ userName, userId, initialProjects, loadError }: {
+export function Dashboard({ userName: initialName, userId, initialProjects, loadError, initialProfile, settingsPage = false }: {
     userName: string;
     userId: string;
     initialProjects: Project[];
     loadError: string | null;
+    initialProfile?: Profile;
+    settingsPage?: boolean;
 }) {
+    const [profile, setProfile] = useState(initialProfile);
+    const userName = profile ? profileName(profile) : initialName;
+    const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const activeSection = navigation.find((item) => item.id === searchParams.get('section'))?.label ?? 'Огляд';
+    const activeSection = settingsPage ? 'Налаштування' : navigation.find((item) => item.id === searchParams.get('section'))?.label ?? 'Огляд';
     function sectionHref(label: string) {
         const params = new URLSearchParams(searchParams.toString());
         const id = navigation.find((item) => item.label === label)?.id ?? 'overview';
         if (id === 'overview') params.delete('section');
         else params.set('section', id);
-        return `${pathname}${params.size ? `?${params}` : ''}`;
+        return `${settingsPage ? '/' : pathname}${params.size ? `?${params}` : ''}`;
     }
     function navigateSection(label: string) {
+        if (settingsPage) { router.push(sectionHref(label)); return; }
         if (label !== activeSection) window.history.pushState(null, '', sectionHref(label));
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
@@ -138,7 +147,7 @@ export function Dashboard({ userName, userId, initialProjects, loadError }: {
                     ))}
                 </nav>
                 <div className="sidebar-note"><span className="sidebar-note-icon"><FolderOpen size={20} /></span><h3>Від задуму до результату.</h3><p>Ваші проєкти й фінанси — в одному просторі.</p></div>
-                <div className="sidebar-profile"><span className="user-avatar">{userName.slice(0, 1).toUpperCase()}</span><span className="profile-name">{userName}<small>Особистий акаунт</small></span><button onClick={signOut} aria-label="Вийти з акаунта" className="icon-button"><LogOut size={17} /></button></div>
+                <div className="sidebar-profile"><a href="/settings" aria-label="Налаштування профілю"><Avatar name={userName} url={profile?.avatarUrl} /></a><span className="profile-name">{userName}<small>Особистий акаунт</small></span><button onClick={signOut} aria-label="Вийти з акаунта" className="icon-button"><LogOut size={17} /></button></div>
             </aside>
             <main className="workspace-main">
                 <header className="workspace-topbar">
@@ -148,14 +157,15 @@ export function Dashboard({ userName, userId, initialProjects, loadError }: {
                             {activeSection !== 'Огляд' && <li><ChevronRight size={14} aria-hidden="true" /><span aria-current="page">{activeSection}</span></li>}
                         </ol>
                     </nav>
-                    <div className="topbar-account"><span className="private-label"><span />Особистий простір</span><button onClick={signOut} className="user-avatar" aria-label="Вийти з акаунта" title="Вийти з акаунта">{userName.slice(0, 1).toUpperCase()}</button></div>
+                    <div className="topbar-account"><span className="private-label"><span />Особистий простір</span><AccountMenu name={userName} avatarUrl={profile?.avatarUrl} onSignOut={signOut} /></div>
                 </header>
-                <div className="workspace-content">
-                    <div className="workspace-page-heading">
+                <div className={`workspace-content ${settingsPage ? 'profile-content' : ''}`}>
+                    {settingsPage && profile && <ProfileSettings profile={profile} userId={userId} onSaved={setProfile} />}
+                    {!settingsPage && <div className="workspace-page-heading">
                         <div><p className="eyebrow">УСЕ ПІД КОНТРОЛЕМ</p><h1>{activeSection === 'Огляд' ? `Вітаємо, ${userName.split(' ')[0]}` : activeSection}</h1><p className="page-description">{isProjects ? 'Ваші проєкти, оплати та наступні кроки.' : activeSection === 'Послуги та ціни' ? 'Власний прайс для вашої майстерності.' : 'Більше можливостей для вашої роботи.'}</p></div>
                         {isProjects && <Button onClick={openForm} disabled={!!loadError} className="workspace-primary"><Plus size={18} />Новий проєкт</Button>}
-                    </div>
-                    {isProjects && notice && <p role="status" className="workspace-notice">{notice}</p>}
+                    </div>}
+                    {notice && <p role="status" className="workspace-notice">{notice}</p>}
                     {isProjects && loadError && <div role="alert" className="workspace-error"><p>{loadError}</p><Button onClick={() => window.location.reload()} variant="outline" className="mt-3">Спробувати знову</Button></div>}
                     {isProjects && showForm && (
                         <section aria-labelledby="new-project-heading" className="workspace-panel project-form-panel">

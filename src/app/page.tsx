@@ -2,6 +2,7 @@ import { Dashboard } from '@/components/dashboard';
 import { LoginScreen } from '@/components/login-screen';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { projectError, type Project } from '@/lib/projects';
+import { profileFromUser, profileName } from '@/lib/profile';
 
 export default async function Home() {
     const supabase = await createSupabaseServerClient();
@@ -34,7 +35,8 @@ export default async function Home() {
             initialProjects={projects}
             loadError={loadError}
             userId={user.id}
-            userName={user.user_metadata?.full_name ?? user.email ?? 'Майстер'}
+            userName={profileName(profileFromUser(user))}
+            initialProfile={profileFromUser(user)}
         />
     );
 }
