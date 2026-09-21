@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 
@@ -11,6 +11,13 @@ const inter = Inter({
 export const metadata: Metadata = {
     title: 'Мій кошторис | Кабінет майстра',
     description: 'Кошториси, проекти та портфоліо майстра в одному кабінеті.',
+};
+
+export const viewport: Viewport = {
+    width: 'device-width',
+    initialScale: 1,
+    viewportFit: 'cover',
+    themeColor: '#ffffff',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {

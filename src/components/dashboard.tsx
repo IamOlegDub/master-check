@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useRef, useState, type FormEvent, type MouseEvent } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { BriefcaseBusiness, Camera, CircleDollarSign, ClipboardList, Hammer, Home, LogOut, Plus, Sparkles, ArrowUpRight, ChevronRight, Search, X, FolderOpen, UserRound, Wallet, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PriceList } from '@/components/price-list';
@@ -9,10 +10,10 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { projectError, projectStatuses, type Project } from '@/lib/projects';
 
 const navigation = [
-    { label: 'Огляд', icon: Home },
-    { label: 'Проекти', icon: ClipboardList },
-    { label: 'Послуги та ціни', icon: Hammer },
-    { label: 'Портфоліо', icon: Camera },
+    { id: 'overview', label: 'Огляд', icon: Home },
+    { id: 'projects', label: 'Проекти', icon: ClipboardList },
+    { id: 'services', label: 'Послуги та ціни', icon: Hammer },
+    { id: 'portfolio', label: 'Портфоліо', icon: Camera },
 ];
 // Keep SSR and browser output identical across different ICU/CLDR versions.
 const money = (amount: number) => {
@@ -27,7 +28,25 @@ export function Dashboard({ userName, userId, initialProjects, loadError }: {
     initialProjects: Project[];
     loadError: string | null;
 }) {
-    const [activeSection, setActiveSection] = useState('Огляд');
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const activeSection = navigation.find((item) => item.id === searchParams.get('section'))?.label ?? 'Огляд';
+    function sectionHref(label: string) {
+        const params = new URLSearchParams(searchParams.toString());
+        const id = navigation.find((item) => item.label === label)?.id ?? 'overview';
+        if (id === 'overview') params.delete('section');
+        else params.set('section', id);
+        return `${pathname}${params.size ? `?${params}` : ''}`;
+    }
+    function navigateSection(label: string) {
+        if (label !== activeSection) window.history.pushState(null, '', sectionHref(label));
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+    function followSection(event: MouseEvent<HTMLAnchorElement>, label: string) {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        navigateSection(label);
+    }
     const [projects, setProjects] = useState(initialProjects);
     const updateProject = useCallback((project: Project) => setProjects((current) => current.map((item) => item.id === project.id ? project : item)), []);
     const [selectedId, setSelectedId] = useState(initialProjects[0]?.id);
@@ -80,7 +99,7 @@ export function Dashboard({ userName, userId, initialProjects, loadError }: {
             setQuery('');
             setFilter('Усі');
             setShowForm(false);
-            setActiveSection('Проекти');
+            navigateSection('Проекти');
             setNotice('Проєкт збережено.');
         } catch {
             setError('Не вдалося підтвердити збереження. Перевірте з’єднання й оновіть сторінку перед повторною спробою.');
@@ -112,10 +131,10 @@ export function Dashboard({ userName, userId, initialProjects, loadError }: {
                 <p className="nav-caption">РОБОЧИЙ ПРОСТІР</p>
                 <nav className="workspace-navigation" aria-label="Основна навігація">
                     {navigation.map(({ label, icon: Icon }) => (
-                        <button key={label} onClick={() => setActiveSection(label)} aria-current={activeSection === label ? 'page' : undefined}>
+                        <a key={label} href={sectionHref(label)} onClick={(event) => followSection(event, label)} aria-current={activeSection === label ? 'page' : undefined}>
                             <Icon size={19} strokeWidth={1.7} />{label}
                             {label === 'Проекти' && !loadError && <span className="nav-count">{projects.length}</span>}
-                        </button>
+                        </a>
                     ))}
                 </nav>
                 <div className="sidebar-note"><span className="sidebar-note-icon"><FolderOpen size={20} /></span><h3>Від задуму до результату.</h3><p>Ваші проєкти й фінанси — в одному просторі.</p></div>
@@ -123,7 +142,12 @@ export function Dashboard({ userName, userId, initialProjects, loadError }: {
             </aside>
             <main className="workspace-main">
                 <header className="workspace-topbar">
-                    <div className="breadcrumbs"><span className="desktop-breadcrumb">Робочий простір</span><ChevronRight size={14} className="desktop-breadcrumb" /><span>{activeSection}</span></div>
+                    <nav className="breadcrumbs" aria-label="Шлях навігації">
+                        <ol>
+                            <li><a href={sectionHref('Огляд')} onClick={(event) => followSection(event, 'Огляд')} aria-current={activeSection === 'Огляд' ? 'page' : undefined}><Home size={16} aria-hidden="true" /><span>Огляд</span></a></li>
+                            {activeSection !== 'Огляд' && <li><ChevronRight size={14} aria-hidden="true" /><span aria-current="page">{activeSection}</span></li>}
+                        </ol>
+                    </nav>
                     <div className="topbar-account"><span className="private-label"><span />Особистий простір</span><button onClick={signOut} className="user-avatar" aria-label="Вийти з акаунта" title="Вийти з акаунта">{userName.slice(0, 1).toUpperCase()}</button></div>
                 </header>
                 <div className="workspace-content">
@@ -172,13 +196,20 @@ export function Dashboard({ userName, userId, initialProjects, loadError }: {
                             </section>
                         )}
                     </>}
-                    {isProjects && selected && !loadError && <ProjectEstimate key={selected.id} projectId={selected.id} userId={userId} onProjectChange={updateProject} openPriceList={() => setActiveSection('Послуги та ціни')} />}
+                    {isProjects && selected && !loadError && <ProjectEstimate key={selected.id} projectId={selected.id} userId={userId} onProjectChange={updateProject} openPriceList={() => navigateSection('Послуги та ціни')} />}
                     {activeSection === 'Послуги та ціни' && <PriceList userId={userId} userName={userName} />}
-                    {activeSection === 'Портфоліо' && <section className="workspace-panel empty-projects"><div className="empty-art" aria-hidden="true"><Camera size={35} strokeWidth={1.3} /></div><span className="eyebrow">НЕЗАБАРОМ У ВАШОМУ ПРОСТОРІ</span><h2>Роботи, якими ви пишаєтесь</h2><p>Портфоліо ще готується. Зараз можна вести проєкти та їхні фінанси.</p><Button variant="outline" onClick={() => setActiveSection('Проекти')}>До моїх проєктів<ArrowUpRight size={17} /></Button></section>}
+                    {activeSection === 'Портфоліо' && <section className="workspace-panel empty-projects"><div className="empty-art" aria-hidden="true"><Camera size={35} strokeWidth={1.3} /></div><span className="eyebrow">НЕЗАБАРОМ У ВАШОМУ ПРОСТОРІ</span><h2>Роботи, якими ви пишаєтесь</h2><p>Портфоліо ще готується. Зараз можна вести проєкти та їхні фінанси.</p><Button variant="outline" onClick={() => navigateSection('Проекти')}>До моїх проєктів<ArrowUpRight size={17} /></Button></section>}
                     <footer className="workspace-footer"><span>Мій кошторис</span><span>Менше рутини. Більше зробленого.</span></footer>
                 </div>
             </main>
-            <nav aria-label="Мобільна навігація" className="workspace-mobile-nav">{navigation.map(({ label, icon: Icon }) => <button key={label} onClick={() => setActiveSection(label)} aria-current={activeSection === label ? 'page' : undefined}><Icon size={20} strokeWidth={1.7} />{label}</button>)}</nav>
+            <nav aria-label="Мобільна навігація" className="workspace-mobile-nav">
+                {navigation.map(({ label, icon: Icon }) => (
+                    <a key={label} href={sectionHref(label)} onClick={(event) => followSection(event, label)} aria-current={activeSection === label ? 'page' : undefined}>
+                        <span className="mobile-nav-icon"><Icon size={23} strokeWidth={activeSection === label ? 2.2 : 1.7} aria-hidden="true" /></span>
+                        <span className="mobile-nav-label">{label === 'Проекти' ? 'Проєкти' : label}</span>
+                    </a>
+                ))}
+            </nav>
         </div>
     );
 }
