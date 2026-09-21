@@ -365,6 +365,20 @@
 .price-table td:nth-child(3), .price-table td:nth-child(4) { white-space: nowrap; }
 .price-table td:nth-child(4), .price-table th:nth-child(4) { text-align: right; font-variant-numeric: tabular-nums; }
 .price-table tbody tr:hover { background: #fcfbff; }
+@media (max-width: 760px) {
+  .price-table-wrap { overflow: visible; }
+  .price-table, .price-table tbody { display: block; }
+  .price-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .price-table tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; padding: 16px 18px; border-top: 1px solid var(--line); }
+  .price-table td { display: block; padding: 0; border: 0; min-width: 0; }
+  .price-table td:first-child { grid-column: 1 / -1; min-width: 0; max-width: none; font-size: 14px; }
+  .price-table td:nth-child(2) { grid-column: 1 / -1; max-width: none; }
+  .price-table td:nth-child(3) { grid-column: 1; white-space: normal; color: var(--subtle); align-self: end; }
+  .price-table td:nth-child(4) { grid-column: 1; text-align: left; white-space: normal; overflow-wrap: anywhere; font-size: 16px; font-weight: 600; }
+  .price-table td:nth-child(5) { grid-column: 2; grid-row: 3 / 5; align-self: center; }
+  .price-table .icon-button { width: 44px; height: 44px; }
+  .price-category-label { overflow-wrap: anywhere; }
+}
 .price-row-actions { display: flex; justify-content: flex-end; }
 .price-category-label { display: inline-block; padding: 4px 8px; border-radius: 5px; color: #82739c; background: #f3f0fa; font-size: 10px; }
 .pdf-options { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: end; padding: 0 24px 20px; }
