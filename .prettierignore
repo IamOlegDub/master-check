@@ -1,0 +1,6 @@
+.next
+node_modules
+next-app
+pnpm-lock.yaml
+public
+supabase/migrations

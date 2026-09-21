@@ -10,6 +10,8 @@ Keep the deployed and localhost `/auth/callback` URLs in Authentication → URL 
 
 Photos: input JPG/PNG/WebP up to 10 MB → touch/keyboard crop using react-easy-crop → square image up to 768×768 → WebP quality 0.85 (PNG fallback in browsers without WebP encoding). The original is never uploaded. The round crop guide is used in menus, the same image is displayed as a rectangular mobile profile hero. Old uploaded images are removed only after a successful profile update. If a network failure leaves an unreferenced image, it can be cleaned up later; the app does not delete an upload after an ambiguous save result.
 
+Confirm the crop, then use **Save photo** next to the preview. This saves only the avatar, preserving unsaved text fields. Removing a photo also requires confirmation. **Save profile** saves all current changes. Profile, account menu and crop dialog use Tailwind utilities; only the mobile photo panel has square corners.
+
 ## Українською
 
 Натисніть аватар → **Налаштування**. Обов’язкові ім’я та email. Прізвище, контактний телефон і опис — необов’язкові. Дані зберігаються в Supabase Auth, окремо від полів Google. Зміна email потребує підтвердження; телефон поки не використовується для входу.
@@ -19,5 +21,7 @@ Photos: input JPG/PNG/WebP up to 10 MB → touch/keyboard crop using react-easy-
 У Redirect URLs залиште адреси `/auth/callback` для Vercel та localhost. Після зміни email перевірте стару й нову пошту. Не вимикайте підтвердження для спрощення тестування.
 
 Фото можна пересувати та масштабувати перед збереженням. Зберігається оптимізована версія до 768×768. На мобільному фото займає приблизно третину висоти екрана під хедером, на десктопі показується круглим портретом поруч із формою.
+
+Натисніть **Підтвердити кадрування**, потім **Зберегти фото** біля аватара. Фото зберігається окремо, без зміни незбережених текстових полів. Видалення також потребує підтвердження. Форма, меню та редактор оформлені через Tailwind. Прямі кути на мобільному застосовані лише до блоку аватара.
 
 Можливі наступні поля: місто та радіус виїзду, назва майстерні, посилання на портфоліо, контакти для PDF. Вони поки не додані до форми.

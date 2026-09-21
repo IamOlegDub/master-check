@@ -4,6 +4,10 @@ A workspace for tradespeople: projects, initial costs and payments, a custom ser
 
 Deployment: [Vercel setup guide](docs/DEPLOYMENT.md). Estimate and payment rules: [supabase/README.md](supabase/README.md).
 
+Profile and avatar setup: [Profile settings](docs/PROFILE.md).
+
+UI styles: [Tailwind component guide](docs/STYLING.md). Format components with `pnpm format`.
+
 ## Local setup
 
 1. Install dependencies: `pnpm install`.
@@ -41,6 +45,10 @@ To deploy, add the variables from `.env.example` to your hosting settings and al
 Кабінет майстра: проєкти, початкова вартість та оплата, власний прайс послуг і PDF для замовників.
 
 Деплой: [інструкція Vercel](docs/DEPLOYMENT.md). Правила кошторису й оплат: [supabase/README.md](supabase/README.md).
+
+Профіль і завантаження фото: [налаштування профілю](docs/PROFILE.md).
+
+Стилі інтерфейсу: [Tailwind у компонентах](docs/STYLING.md). Форматування — `pnpm format`.
 
 ## Локальний запуск
 

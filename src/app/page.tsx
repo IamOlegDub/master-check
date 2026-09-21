@@ -22,8 +22,11 @@ export default async function Home() {
     let projects: Project[] = [];
     let loadError: string | null = null;
     try {
-        const { data, error } = await supabase.from('projects').select('*')
-            .eq('user_id', user.id).order('created_at', { ascending: false });
+        const { data, error } = await supabase
+            .from('projects')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
         if (error) loadError = projectError(error);
         else projects = (data ?? []) as Project[];
     } catch {
