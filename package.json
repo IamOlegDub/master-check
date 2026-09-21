@@ -2,12 +2,17 @@
   "name": "master-check",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:price-list": "node --test tests/price-list.test.cjs"
+    "test:price-list": "node --test tests/price-list.test.cjs",
+    "test:estimates": "node --test tests/estimates.test.cjs",
+    "test": "node --test tests/*.test.cjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -28,6 +33,7 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

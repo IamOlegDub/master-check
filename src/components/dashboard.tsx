@@ -1,9 +1,10 @@
 'use client';
 
-import { useRef, useState, type FormEvent } from 'react';
+import { useCallback, useRef, useState, type FormEvent } from 'react';
 import { BriefcaseBusiness, Camera, CircleDollarSign, ClipboardList, Hammer, Home, LogOut, Plus, Sparkles, ArrowUpRight, ChevronRight, Search, X, FolderOpen, UserRound, Wallet, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PriceList } from '@/components/price-list';
+import { ProjectEstimate } from '@/components/project-estimate';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { projectError, projectStatuses, type Project } from '@/lib/projects';
 
@@ -28,6 +29,7 @@ export function Dashboard({ userName, userId, initialProjects, loadError }: {
 }) {
     const [activeSection, setActiveSection] = useState('Огляд');
     const [projects, setProjects] = useState(initialProjects);
+    const updateProject = useCallback((project: Project) => setProjects((current) => current.map((item) => item.id === project.id ? project : item)), []);
     const [selectedId, setSelectedId] = useState(initialProjects[0]?.id);
     const [query, setQuery] = useState('');
     const [filter, setFilter] = useState('Усі');
@@ -39,7 +41,7 @@ export function Dashboard({ userName, userId, initialProjects, loadError }: {
     const selected = projects.find((project) => project.id === selectedId);
     const openForm = () => { setError(''); setNotice(''); setShowForm(true); };
     const visibleProjects = projects.filter((project) => (filter === 'Усі' || project.status === filter) && `${project.name} ${project.client}`.toLocaleLowerCase('uk-UA').includes(query.toLocaleLowerCase('uk-UA')));
-    const paymentPercent = selected && Number(selected.total) > 0 ? Math.round(Number(selected.paid) / Number(selected.total) * 100) : 0;
+    const paymentPercent = selected && Number(selected.total) > 0 ? Math.min(100, Math.round(Number(selected.paid) / Number(selected.total) * 100)) : 0;
     const isProjects = activeSection === 'Огляд' || activeSection === 'Проекти';
 
     async function createProject(event: FormEvent<HTMLFormElement>) {
@@ -48,15 +50,13 @@ export function Dashboard({ userName, userId, initialProjects, loadError }: {
         const fields = new FormData(event.currentTarget);
         const name = String(fields.get('name') ?? '').trim();
         const client = String(fields.get('client') ?? '').trim();
-        const total = Number(fields.get('total') || 0);
-        const paid = Number(fields.get('paid') || 0);
         const status = String(fields.get('status')) as Project['status'];
         if (!name || name.length > 160 || client.length > 160) {
             setError('Вкажіть назву проєкту. Назва та ім’я клієнта — до 160 символів.');
             return;
         }
-        if (!Number.isFinite(total) || !Number.isFinite(paid) || total < 0 || paid < 0 || paid > total || total > 9999999999.99 || !projectStatuses.includes(status)) {
-            setError('Перевірте суми: оплата не може перевищувати загальну вартість.');
+        if (!projectStatuses.includes(status)) {
+            setError('Оберіть статус проєкту.');
             return;
         }
         savingRef.current = true;
@@ -71,7 +71,7 @@ export function Dashboard({ userName, userId, initialProjects, loadError }: {
                 return;
             }
             const { data, error: insertError } = await supabase.from('projects')
-                .insert({ user_id: auth.user.id, name, client, status, total, paid }).select('*').single();
+                .insert({ user_id: auth.user.id, name, client, status }).select('*').single();
             if (insertError) { setError(projectError(insertError)); return; }
             if (!data) { setError('Не вдалося підтвердити збереження. Оновіть сторінку перед повторною спробою.'); return; }
             const project = data as Project;
@@ -135,13 +135,11 @@ export function Dashboard({ userName, userId, initialProjects, loadError }: {
                     {isProjects && loadError && <div role="alert" className="workspace-error"><p>{loadError}</p><Button onClick={() => window.location.reload()} variant="outline" className="mt-3">Спробувати знову</Button></div>}
                     {isProjects && showForm && (
                         <section aria-labelledby="new-project-heading" className="workspace-panel project-form-panel">
-                            <div className="panel-heading"><div><span className="eyebrow">НОВИЙ ПОЧАТОК</span><h2 id="new-project-heading">Створимо ваш проєкт</h2><p>Додайте основне. Клієнта можна вказати за бажанням.</p></div><button className="icon-button" disabled={saving} aria-label="Закрити форму" onClick={() => setShowForm(false)}><X size={20} /></button></div>
+                            <div className="panel-heading"><div><span className="eyebrow">НОВИЙ ПОЧАТОК</span><h2 id="new-project-heading">Створимо ваш проєкт</h2><p>Вкажіть назву й клієнта. Вартість сформується з пунктів робіт.</p></div><button className="icon-button" disabled={saving} aria-label="Закрити форму" onClick={() => setShowForm(false)}><X size={20} /></button></div>
                             <form onSubmit={createProject}>
                                 <fieldset disabled={saving} className="project-form-fields">
                                     <label>Назва проєкту<input autoFocus name="name" placeholder="Наприклад, ремонт квартири" required maxLength={160} className={fieldClass} /></label>
                                     <label>Клієнт <span className="optional-label">необов’язково</span><input name="client" placeholder="Ім’я або назва компанії" maxLength={160} className={fieldClass} /></label>
-                                    <label>Загальна сума, ₴<input name="total" type="number" min="0" max="9999999999.99" step="0.01" defaultValue="0" required className={fieldClass} /></label>
-                                    <label>Вже оплачено, ₴<input name="paid" type="number" min="0" max="9999999999.99" step="0.01" defaultValue="0" required className={fieldClass} /></label>
                                     <label>Статус<select name="status" className={fieldClass}>{projectStatuses.map((status) => <option key={status}>{status}</option>)}</select></label>
                                 </fieldset>
                                 {error && <p role="alert" className="workspace-error">{error}</p>}
@@ -154,11 +152,11 @@ export function Dashboard({ userName, userId, initialProjects, loadError }: {
                             {[
                                 { label: 'Активні проєкти', value: projects.filter((p) => p.status !== 'Завершено').length, tone: 'indigo', note: 'Заплановані та в роботі', icon: BriefcaseBusiness },
                                 { label: 'Зараз у роботі', value: projects.filter((p) => p.status === 'В роботі').length, tone: 'amber', note: 'Рухаємося до результату', icon: Hammer },
-                                { label: 'До отримання', value: money(projects.reduce((sum, p) => sum + Math.round((Number(p.total) - Number(p.paid)) * 100), 0) / 100), tone: 'mint', note: 'Залишок оплат за проєктами', icon: Wallet },
+                                { label: 'До отримання', value: money(projects.reduce((sum, p) => sum + Math.max(0, Math.round((Number(p.total) - Number(p.paid)) * 100)), 0) / 100), tone: 'mint', note: 'Залишок оплат за проєктами', icon: Wallet },
                             ].map(({ label, value, tone, note, icon: Icon }) => <div key={label} className="stat-card"><div className="stat-top"><span>{label}</span><span className={`stat-icon ${tone}`}><Icon size={19} strokeWidth={1.7} /></span></div><p className="stat-value">{value}</p><p className="stat-note">{note}</p></div>)}
                         </section>
                         {projects.length === 0 ? (
-                            <section className="workspace-panel empty-projects"><div className="empty-art" aria-hidden="true"><span /><FolderOpen size={35} strokeWidth={1.3} /><i><Plus size={16} /></i></div><span className="eyebrow">МІСЦЕ ДЛЯ ВАШИХ ІДЕЙ</span><h2>Перший проєкт починається тут</h2><p>Додайте назву, клієнта й вартість робіт.<br />Ми допоможемо тримати фінанси в порядку.</p><Button onClick={openForm} className="workspace-primary"><Plus size={17} />Створити перший проєкт</Button></section>
+                            <section className="workspace-panel empty-projects"><div className="empty-art" aria-hidden="true"><span /><FolderOpen size={35} strokeWidth={1.3} /><i><Plus size={16} /></i></div><span className="eyebrow">МІСЦЕ ДЛЯ ВАШИХ ІДЕЙ</span><h2>Перший проєкт починається тут</h2><p>Додайте назву й клієнта, а потім роботи з прайсу.<br />Ми допоможемо тримати фінанси в порядку.</p><Button onClick={openForm} className="workspace-primary"><Plus size={17} />Створити перший проєкт</Button></section>
                         ) : (
                             <section className="projects-layout">
                                 <div className="workspace-panel project-list-panel">
@@ -170,10 +168,11 @@ export function Dashboard({ userName, userId, initialProjects, loadError }: {
                                     </div>
                                     <div className="list-footer">Показано {visibleProjects.length} із {projects.length}</div>
                                 </div>
-                                {selected && <aside className="project-details" aria-label="Деталі обраного проєкту"><div className="detail-top"><span>ДЕТАЛІ ПРОЄКТУ</span><ArrowUpRight size={18} /></div><div className="detail-folder"><FolderOpen size={26} strokeWidth={1.5} /></div><h2>{selected.name}</h2><p className="detail-client"><UserRound size={14} />{selected.client || 'Клієнт не вказаний'}</p><span className="detail-status">{selected.status === 'Завершено' && <Check size={13} />}{selected.status}</span><div className="detail-total"><span>Вартість проєкту</span><p>{money(Number(selected.total))}</p></div><div className="payment-heading"><span>Оплачено</span><span>{paymentPercent}%</span></div><div className="payment-track" role="progressbar" aria-label="Частка оплаченої суми" aria-valuemin={0} aria-valuemax={100} aria-valuenow={paymentPercent}><span style={{ width: `${paymentPercent}%` }} /></div><dl className="detail-amounts"><div><dt>Вже отримано</dt><dd>{money(Number(selected.paid))}</dd></div><div><dt>Залишилось</dt><dd>{money((Math.round(Number(selected.total) * 100) - Math.round(Number(selected.paid) * 100)) / 100)}</dd></div></dl><div className="detail-footnote"><CircleDollarSign size={16} /><span>Усі суми в українській гривні</span></div></aside>}
+                                {selected && <aside className="project-details" aria-label="Деталі обраного проєкту"><div className="detail-top"><span>ДЕТАЛІ ПРОЄКТУ</span><ArrowUpRight size={18} /></div><div className="detail-folder"><FolderOpen size={26} strokeWidth={1.5} /></div><h2>{selected.name}</h2><p className="detail-client"><UserRound size={14} />{selected.client || 'Клієнт не вказаний'}</p><span className="detail-status">{selected.status === 'Завершено' && <Check size={13} />}{selected.status}</span><div className="detail-total"><span>Вартість проєкту</span><p>{money(Number(selected.total))}</p></div><div className="payment-heading"><span>Оплачено</span><span>{paymentPercent}%</span></div><div className="payment-track" role="progressbar" aria-label="Частка оплаченої суми" aria-valuemin={0} aria-valuemax={100} aria-valuenow={paymentPercent}><span style={{ width: `${paymentPercent}%` }} /></div><dl className="detail-amounts"><div><dt>Вже отримано</dt><dd>{money(Number(selected.paid))}</dd></div><div><dt>Залишилось</dt><dd>{money(Math.max(0, Math.round(Number(selected.total) * 100) - Math.round(Number(selected.paid) * 100)) / 100)}</dd></div></dl><div className="detail-footnote"><CircleDollarSign size={16} /><span>Усі суми в українській гривні</span></div></aside>}
                             </section>
                         )}
                     </>}
+                    {isProjects && selected && !loadError && <ProjectEstimate key={selected.id} projectId={selected.id} userId={userId} onProjectChange={updateProject} openPriceList={() => setActiveSection('Послуги та ціни')} />}
                     {activeSection === 'Послуги та ціни' && <PriceList userId={userId} userName={userName} />}
                     {activeSection === 'Портфоліо' && <section className="workspace-panel empty-projects"><div className="empty-art" aria-hidden="true"><Camera size={35} strokeWidth={1.3} /></div><span className="eyebrow">НЕЗАБАРОМ У ВАШОМУ ПРОСТОРІ</span><h2>Роботи, якими ви пишаєтесь</h2><p>Портфоліо ще готується. Зараз можна вести проєкти та їхні фінанси.</p><Button variant="outline" onClick={() => setActiveSection('Проекти')}>До моїх проєктів<ArrowUpRight size={17} /></Button></section>}
                     <footer className="workspace-footer"><span>Мій кошторис</span><span>Менше рутини. Більше зробленого.</span></footer>

@@ -2,6 +2,8 @@
 
 A workspace for tradespeople: projects, initial costs and payments, a custom service price list, and PDFs for customers.
 
+Deployment: [Vercel setup guide](docs/DEPLOYMENT.md). Estimate and payment rules: [supabase/README.md](supabase/README.md).
+
 ## Local setup
 
 1. Install dependencies: `pnpm install`.
@@ -13,18 +15,18 @@ A workspace for tradespeople: projects, initial costs and payments, a custom ser
 ## Features
 
 - Google sign-in and access to each user's own data through Supabase RLS.
-- Project creation with a client, cost, initial payment, and status.
+- Projects with a client and status; the total is calculated from estimate items selected from your service price list.
 - Categories and services: creation, editing, deletion, and pricing per unit.
 - Search, category filtering, and price list sorting.
 - PDF export of the entire price list or the current selection, with Cyrillic support and multipage tables.
 - Responsive interface using the Inter font.
 
-Portfolio features and itemized project estimates are not implemented yet.
+Estimate items support quantities, frozen unit prices, percentage discounts/surcharges, completion dates, partial payments and separately tracked advances. Advances can be allocated to chosen items without counting money twice. All changes have an event history. Portfolio features are not implemented yet.
 
 ## Checks
 
 ```sh
-pnpm test:price-list
+pnpm test
 pnpm build
 ```
 
@@ -38,6 +40,8 @@ To deploy, add the variables from `.env.example` to your hosting settings and al
 
 Кабінет майстра: проєкти, початкова вартість та оплата, власний прайс послуг і PDF для замовників.
 
+Деплой: [інструкція Vercel](docs/DEPLOYMENT.md). Правила кошторису й оплат: [supabase/README.md](supabase/README.md).
+
 ## Локальний запуск
 
 1. Установіть залежності: `pnpm install`.
@@ -49,18 +53,18 @@ To deploy, add the variables from `.env.example` to your hosting settings and al
 ## Можливості
 
 - Google-вхід і доступ до власних даних через Supabase RLS.
-- Створення проєктів із клієнтом, вартістю, початковою оплатою та статусом.
+- Проєкти з клієнтом і статусом; вартість формується з пунктів кошторису, вибраних із власного прайсу.
 - Категорії та послуги: створення, редагування, видалення, ціна за одиницю.
 - Пошук, фільтрація за категоріями та сортування прайсу.
 - PDF усього прайсу або поточної вибірки, з кирилицею та багатосторінковими таблицями.
 - Адаптивний інтерфейс зі шрифтом Inter.
 
-Портфоліо та деталізація кошторису проєктів ще не реалізовані.
+Пункти кошторису підтримують кількість, збережену ціну за одиницю, знижку/націнку у відсотках, дату виконання, часткові оплати та окремий облік авансів. Аванс можна зарахувати на обрані роботи без подвійного врахування грошей. Зміни мають історію. Портфоліо ще не реалізоване.
 
 ## Перевірки
 
 ```sh
-pnpm test:price-list
+pnpm test
 pnpm build
 ```
 

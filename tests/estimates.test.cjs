@@ -1,0 +1,100 @@
+﻿const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const ts = require('typescript');
+const { PGlite } = require('@electric-sql/pglite');
+require.extensions['.ts'] = (module, filename) => module._compile(ts.transpileModule(fs.readFileSync(filename, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText, filename);
+const { calculateLineTotal, projectBalance } = require('../src/lib/estimates.ts');
+const id = () => crypto.randomUUID();
+
+test('estimate arithmetic rounds cents exactly and validates fractional quantities and adjustments', () => {
+    assert.equal(calculateLineTotal('400', '650', '-10'), 234000);
+    assert.equal(calculateLineTotal('400', '650', '15'), 299000);
+    assert.equal(calculateLineTotal('0.005', '1', '0'), 0.01);
+    assert.equal(calculateLineTotal('1', '1.005', '0'), null);
+    assert.equal(calculateLineTotal('0', '100', '0'), null);
+    assert.equal(calculateLineTotal('1', '100', '-100'), 0);
+    assert.equal(calculateLineTotal('1', '100', '-101'), null);
+    assert.equal(calculateLineTotal('999999999.999', '9999999999.99', '1000'), null);
+});
+
+test('real PostgreSQL migrations, snapshot prices, payments, allocation, replay, history and tenant isolation', async () => {
+    const db = new PGlite();
+    try {
+        await db.exec(`create role anon; create role authenticated;
+            create schema auth; create table auth.users(id uuid primary key);
+            create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid$$;
+            grant usage on schema public, auth to authenticated, anon;`);
+        for (const file of ['202609200001_create_projects.sql', '202609200002_create_price_list.sql']) await db.exec(fs.readFileSync('supabase/migrations/' + file, 'utf8'));
+        const alice = id(), bob = id(), legacy = id(), aliceCat = id(), bobCat = id(), service = id(), foreignService = id();
+        await db.query('insert into auth.users values ($1), ($2)', [alice, bob]);
+        await db.query('insert into public.projects(id,user_id,name,total,paid) values($1,$2,$3,1000,250)', [legacy, alice, 'Legacy project']);
+        await db.query('insert into public.service_categories(id,user_id,name) values($1,$2,$3),($4,$5,$6)', [aliceCat,alice,'Tile',bobCat,bob,'Other']);
+        await db.query("insert into public.services(id,user_id,category_id,name,price,unit) values($1,$2,$3,'Tile work',100,'m2'),($4,$5,$6,'Private work',200,'lm')", [service,alice,aliceCat,foreignService,bob,bobCat]);
+        await db.exec(fs.readFileSync('supabase/migrations/202609200003_project_estimates.sql', 'utf8'));
+        async function asUser(user) { await db.exec('reset role'); await db.query("select set_config('request.jwt.claim.sub',$1,false)",[user]); await db.exec('set role authenticated'); }
+        async function detail(project) { return (await db.query('select public.project_detail($1) value',[project])).rows[0].value; }
+        await asUser(alice);
+        const migrated = await detail(legacy);
+        assert.equal(Number(migrated.project.total),1000); assert.equal(Number(migrated.project.paid),250);
+        assert.equal(migrated.items.length,1); assert.equal(migrated.payments[0].occurred_at,null);
+        assert.equal(projectBalance(migrated).unallocated,250);
+        const project = (await db.query("insert into public.projects(user_id,name) values($1,'New project') returning id",[alice])).rows[0].id;
+        let current=await detail(project);
+        const mutate=async(action,payload={},requestId=id(),version=current.project.version)=>{
+            const data=(await db.query('select public.project_mutate($1,$2,$3::jsonb,$4) value',[project,action,JSON.stringify({...payload,version}),requestId])).rows[0].value;
+            current=data;return data;
+        };
+        const firstRequest=id();
+        await mutate('add_item',{service_id:service,quantity:'400',adjustment_percent:'10'},firstRequest,0);
+        assert.equal(Number(current.project.total),44000);
+        const item=current.items[0].id;
+        await mutate('add_item',{service_id:service,quantity:'400',adjustment_percent:'10'},firstRequest,0);
+        assert.equal(current.items.length,1); assert.equal(current.project.version,1);
+        await assert.rejects(()=>mutate('add_item',{service_id:service,quantity:'2'},firstRequest,0));
+        await db.query('update public.services set price=999 where id=$1',[service]);
+        assert.equal(Number((await detail(project)).items[0].unit_price),100);
+        await assert.rejects(()=>mutate('add_item',{service_id:foreignService,quantity:1}));
+        await assert.rejects(()=>mutate('payment',{amount:100},id(),0));
+        const eventDate='2025-01-02T12:30:00.000Z';
+        await mutate('payment',{amount:10000,occurred_at:eventDate,note:'Advance'});
+        const advance=current.payments.find(p=>p.kind==='advance');
+        assert.equal(Number(current.project.paid),10000); assert.equal(projectBalance(current).unallocated,10000);
+        await mutate('allocate',{item_id:item,amount:2500,occurred_at:eventDate});
+        assert.equal(Number(current.project.paid),10000); assert.equal(Number(current.items[0].paid_amount),2500);
+        assert.equal(projectBalance(current).unallocated,7500);
+        const receiptRequest=id(),receiptVersion=current.project.version;
+        await mutate('payment',{item_id:item,amount:1500,occurred_at:eventDate},receiptRequest,receiptVersion);
+        await mutate('payment',{item_id:item,amount:1500,occurred_at:eventDate},receiptRequest,receiptVersion);
+        assert.equal(Number(current.project.paid),11500); assert.equal(Number(current.items[0].paid_amount),4000);
+        const direct=current.payments.find(p=>p.kind==='item');
+        await assert.rejects(()=>mutate('allocate',{item_id:item,amount:10000}));
+        assert.equal(Number((await detail(project)).items[0].paid_amount),4000);
+        await assert.rejects(()=>mutate('edit_item',{item_id:item,quantity:1,unit_price:100,adjustment_percent:0}));
+        await assert.rejects(()=>mutate('delete_item',{item_id:item}));
+        await mutate('complete_item',{item_id:item,completed:true,occurred_at:eventDate});
+        assert.ok(current.items[0].completed_at);
+        await mutate('complete_item',{item_id:item,completed:false});
+        assert.equal(current.items[0].completed_at,null);
+        await mutate('void_payment',{payment_id:direct.id,note:'Duplicate entry'});
+        assert.equal(Number(current.project.paid),10000); assert.equal(Number(current.items[0].paid_amount),2500);
+        await mutate('release_advance',{item_id:item});
+        assert.equal(projectBalance(current).unallocated,10000); assert.equal(Number(current.items[0].paid_amount),0);
+        await mutate('edit_item',{item_id:item,quantity:1,unit_price:100,adjustment_percent:0});
+        assert.equal(projectBalance(current).overpaid,9900);
+        await mutate('void_payment',{payment_id:advance.id,note:'Incorrect advance'});
+        assert.equal(Number(current.project.paid),0);
+        await mutate('delete_item',{item_id:item});
+        assert.equal(Number(current.project.total),0); assert.equal(current.items.length,0);
+        assert.ok(current.events.find(e=>e.action==='payment' && e.occurred_at.startsWith('2025-01-02')));
+        await assert.rejects(()=>db.query('update public.projects set total=999 where id=$1',[project]));
+        await assert.rejects(()=>db.query("insert into public.projects(user_id,name,total) values($1,'Tampered',999)",[alice]));
+        await assert.rejects(()=>db.query("insert into public.project_payments(project_id,kind,amount) values($1,'advance',999)",[project]));
+        await asUser(bob);
+        assert.equal((await db.query('select * from public.project_payments')).rows.length,0);
+        await assert.rejects(()=>detail(project));
+        await assert.rejects(()=>db.query('select public.project_mutate($1,$2,$3::jsonb,$4)',[project,'payment',JSON.stringify({version:current.project.version,amount:1}),id()]));
+        await db.exec('reset role; set role anon');
+        await assert.rejects(()=>detail(project));
+    } finally { await db.close(); }
+});
