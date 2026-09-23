@@ -2,11 +2,12 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 
 import { getSupabaseEnv } from '@/lib/supabase/env';
+import { safeReturnPath } from '@/lib/auth-redirect';
 
 export async function GET(request: Request) {
     const requestUrl = new URL(request.url);
     const code = requestUrl.searchParams.get('code');
-    const next = requestUrl.searchParams.get('next') ?? '/';
+    const next = safeReturnPath(requestUrl.searchParams.get('next'));
     const env = getSupabaseEnv();
 
     if (!code || !env) {

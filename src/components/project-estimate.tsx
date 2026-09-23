@@ -59,11 +59,15 @@ export function ProjectEstimate({
     userId,
     onProjectChange,
     openPriceList,
+    workflowMode = false,
+    estimateLocked = false,
 }: {
     projectId: string;
     userId: string;
     onProjectChange: (project: Project) => void;
     openPriceList: () => void;
+    workflowMode?: boolean;
+    estimateLocked?: boolean;
 }) {
     const [detail, setDetail] = useState<ProjectDetail | null>(null);
     const [services, setServices] = useState<Service[]>([]);
@@ -190,6 +194,7 @@ export function ProjectEstimate({
         }
     }
     function openItem(item?: EstimateItem) {
+        if (estimateLocked) return;
         setEditing(item ?? null);
         setServiceId('');
         setSearch('');
@@ -326,7 +331,7 @@ export function ProjectEstimate({
                             {[
                                 ['Кошторис', detail.project.total],
                                 ['Отримано від замовника', detail.project.paid],
-                                ['До сплати', balance.remaining],
+                                ['Залишок за планом', balance.remaining],
                                 ['Нерозподілений аванс', balance.unallocated],
                             ].map(([label, value]) => (
                                 <div key={label}>
@@ -348,22 +353,24 @@ export function ProjectEstimate({
                             не потрібно.
                         </p>
                         <div className="estimate-toolbar flex items-end justify-between gap-[15px] flex-wrap [&_label]:text-[12px] [&_label]:text-subtle [&_>_div]:flex [&_>_div]:gap-2.5 [&_>_div]:flex-wrap max-[601px]:[&_>_div]:w-full max-[601px]:[&_>_div_>_button]:flex-1">
-                            <label>
-                                Статус проєкту
-                                <select
-                                    aria-label="Статус проєкту"
-                                    className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
-                                    value={detail.project.status}
-                                    disabled={disabled}
-                                    onChange={(event) =>
-                                        void mutate('status', { status: event.target.value })
-                                    }
-                                >
-                                    {projectStatuses.map((status) => (
-                                        <option key={status}>{status}</option>
-                                    ))}
-                                </select>
-                            </label>
+                            {!workflowMode && (
+                                <label>
+                                    Статус проєкту
+                                    <select
+                                        aria-label="Статус проєкту"
+                                        className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                        value={detail.project.status}
+                                        disabled={disabled}
+                                        onChange={(event) =>
+                                            void mutate('status', { status: event.target.value })
+                                        }
+                                    >
+                                        {projectStatuses.map((status) => (
+                                            <option key={status}>{status}</option>
+                                        ))}
+                                    </select>
+                                </label>
+                            )}
                             <div>
                                 <Button
                                     variant="outline"
@@ -375,7 +382,7 @@ export function ProjectEstimate({
                                 </Button>
                                 <Button
                                     variant="brand"
-                                    disabled={disabled}
+                                    disabled={disabled || estimateLocked}
                                     onClick={() => openItem()}
                                 >
                                     <Plus size={17} />
@@ -787,7 +794,7 @@ export function ProjectEstimate({
                                                     <div className="price-row-actions flex justify-end">
                                                         <button
                                                             className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[#f1f1f8]"
-                                                            disabled={disabled}
+                                                            disabled={disabled || estimateLocked}
                                                             aria-label={`Редагувати ${item.name}`}
                                                             onClick={() => openItem(item)}
                                                         >
@@ -795,7 +802,11 @@ export function ProjectEstimate({
                                                         </button>
                                                         <button
                                                             className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[#f1f1f8]"
-                                                            disabled={disabled || paid > 0}
+                                                            disabled={
+                                                                disabled ||
+                                                                estimateLocked ||
+                                                                paid > 0
+                                                            }
                                                             title={
                                                                 paid > 0
                                                                     ? 'Спочатку виправте оплату або поверніть аванс'
@@ -838,30 +849,34 @@ export function ProjectEstimate({
                                                     </p>
                                                 )}
                                                 <div className="estimate-item-states flex gap-3 items-center flex-wrap">
-                                                    <button
-                                                        role="checkbox"
-                                                        aria-checked={!!item.completed_at}
-                                                        className="estimate-check inline-flex gap-[7px] items-center text-[11px] [&_>_span]:w-[19px] [&_>_span]:h-[19px] [&_>_span]:border [&_>_span]:border-[#c8c3d9] [&_>_span]:rounded-[5px] [&_>_span]:inline-flex [&_>_span]:items-center [&_>_span]:justify-center [&[aria-checked=true]_>_span]:bg-[#6155db] [&[aria-checked=true]_>_span]:border-[#6155db] [&[aria-checked=true]_>_span]:text-[white] [&[aria-checked=mixed]_>_span]:bg-[#6155db] [&[aria-checked=mixed]_>_span]:border-[#6155db] [&[aria-checked=mixed]_>_span]:text-[white]"
-                                                        disabled={disabled}
-                                                        onClick={() =>
-                                                            openAction({
-                                                                kind: 'complete_item',
-                                                                item,
-                                                            })
-                                                        }
-                                                    >
-                                                        <span>
-                                                            {item.completed_at && (
-                                                                <Check size={13} />
-                                                            )}
-                                                        </span>
-                                                        Виконано
-                                                    </button>
-                                                    <span className="estimate-meta text-[10px] text-subtle">
-                                                        {item.completed_at
-                                                            ? displayDate(item.completed_at)
-                                                            : 'Ще в роботі'}
-                                                    </span>
+                                                    {!workflowMode && (
+                                                        <>
+                                                            <button
+                                                                role="checkbox"
+                                                                aria-checked={!!item.completed_at}
+                                                                className="estimate-check inline-flex gap-[7px] items-center text-[11px] [&_>_span]:w-[19px] [&_>_span]:h-[19px] [&_>_span]:border [&_>_span]:border-[#c8c3d9] [&_>_span]:rounded-[5px] [&_>_span]:inline-flex [&_>_span]:items-center [&_>_span]:justify-center [&[aria-checked=true]_>_span]:bg-[#6155db] [&[aria-checked=true]_>_span]:border-[#6155db] [&[aria-checked=true]_>_span]:text-[white] [&[aria-checked=mixed]_>_span]:bg-[#6155db] [&[aria-checked=mixed]_>_span]:border-[#6155db] [&[aria-checked=mixed]_>_span]:text-[white]"
+                                                                disabled={disabled}
+                                                                onClick={() =>
+                                                                    openAction({
+                                                                        kind: 'complete_item',
+                                                                        item,
+                                                                    })
+                                                                }
+                                                            >
+                                                                <span>
+                                                                    {item.completed_at && (
+                                                                        <Check size={13} />
+                                                                    )}
+                                                                </span>
+                                                                Виконано
+                                                            </button>
+                                                            <span className="estimate-meta text-[10px] text-subtle">
+                                                                {item.completed_at
+                                                                    ? displayDate(item.completed_at)
+                                                                    : 'Ще в роботі'}
+                                                            </span>
+                                                        </>
+                                                    )}
                                                     <button
                                                         role="checkbox"
                                                         aria-checked={

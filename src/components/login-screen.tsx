@@ -6,7 +6,13 @@ import { ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 
-export function LoginScreen({ configured }: { configured: boolean }) {
+export function LoginScreen({
+    configured,
+    nextPath = '/',
+}: {
+    configured: boolean;
+    nextPath?: string;
+}) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -24,7 +30,7 @@ export function LoginScreen({ configured }: { configured: boolean }) {
         const { error: authError } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: `${window.location.origin}/auth/callback`,
+                redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
             },
         });
 

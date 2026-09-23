@@ -1,4 +1,4 @@
-export const projectStatuses = ['Очікує старту', 'В роботі', 'Завершено'] as const;
+export const projectStatuses = ['DRAFT', 'PENDING_APPROVAL', 'IN_PROGRESS', 'COMPLETED'] as const;
 
 export type Project = {
     id: string;

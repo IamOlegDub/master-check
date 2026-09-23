@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { PwaRegistration } from '@/components/pwa';
 
 const inter = Inter({
     variable: '--font-inter',
@@ -11,6 +12,8 @@ const inter = Inter({
 export const metadata: Metadata = {
     title: 'Мій кошторис | Кабінет майстра',
     description: 'Кошториси, проекти та портфоліо майстра в одному кабінеті.',
+    appleWebApp: { capable: true, title: 'Master Check', statusBarStyle: 'default' },
+    icons: { apple: '/icons/icon-192.png' },
 };
 
 export const viewport: Viewport = {
@@ -23,7 +26,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<'/'>) {
     return (
         <html lang="uk" className={`${inter.variable} h-full antialiased`}>
-            <body className="min-h-full flex flex-col">{children}</body>
+            <body className="min-h-full flex flex-col">
+                <PwaRegistration />
+                {children}
+            </body>
         </html>
     );
 }

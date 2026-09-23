@@ -101,7 +101,17 @@ export function localDateTime(value = new Date()) {
 }
 export function displayDate(value: string | null) {
     if (!value) return 'Точна дата невідома';
-    return new Date(value).toLocaleString('uk-UA', { dateStyle: 'medium', timeStyle: 'short' });
+    const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Kyiv',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+    }).formatToParts(new Date(value));
+    const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+    return `${get('day')}.${get('month')}.${get('year')} ${get('hour')}:${get('minute')} (Київ)`;
 }
 export function estimateError(error: { code?: string; message?: string }) {
     if (error.code === 'PGRST202' || error.code === 'PGRST205' || error.code === '42P01')
@@ -114,6 +124,15 @@ export function estimateError(error: { code?: string; message?: string }) {
     return 'Не вдалося підтвердити збереження. Повторіть той самий запит або оновіть дані перед наступною дією.';
 }
 export const eventLabels: Record<string, string> = {
+    link_client: 'Змінено контакт замовника',
+    request_approval: 'Кошторис надіслано на затвердження',
+    approve: 'Замовник затвердив кошторис',
+    request_changes: 'Замовник повернув кошторис на доопрацювання',
+    revise: 'Відкрито нову редакцію кошторису',
+    finish: 'Проєкт завершено',
+    submit_report: 'Звіт надіслано замовнику',
+    confirm_report: 'Замовник підтвердив обсяг робіт',
+    return_report: 'Замовник повернув звіт на доопрацювання',
     import: 'Перенесено початкові суми',
     add_item: 'Додано роботу',
     edit_item: 'Змінено роботу',

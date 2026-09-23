@@ -1,45 +1,37 @@
-import { Dashboard } from '@/components/dashboard';
-import { LoginScreen } from '@/components/login-screen';
-import { createSupabaseServerClient } from '@/lib/supabase/server';
-import { projectError, type Project } from '@/lib/projects';
-import { profileFromUser, profileName } from '@/lib/profile';
-
-export default async function Home() {
-    const supabase = await createSupabaseServerClient();
-
-    if (!supabase) {
-        return <LoginScreen configured={false} />;
-    }
-
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-        return <LoginScreen configured />;
-    }
-
-    let projects: Project[] = [];
-    let loadError: string | null = null;
-    try {
-        const { data, error } = await supabase
-            .from('projects')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false });
-        if (error) loadError = projectError(error);
-        else projects = (data ?? []) as Project[];
-    } catch {
-        loadError = projectError(null);
-    }
-
+import { redirect } from 'next/navigation';
+import { workspaceContext } from '@/lib/workspace-server';
+import { WorkspaceShell } from '@/components/workspace-shell';
+import { WorkspaceHome } from '@/components/workspace-home';
+export default async function Home({
+    searchParams,
+}: {
+    searchParams: Promise<{ section?: string }>;
+}) {
+    const { section } = await searchParams;
+    const paths: Record<string, string> = {
+        projects: '/projects',
+        services: '/services',
+        portfolio: '/portfolio',
+        clients: '/clients',
+    };
+    if (section && paths[section]) redirect(paths[section]);
+    const c = await workspaceContext();
+    const { data: projects, error } = await c.supabase.rpc('workspace_projects');
+    if (error) throw Error('Не вдалося завантажити проєкти. Перевірте міграції та з’єднання.');
+    const contacts =
+        c.role === 'MASTER'
+            ? await c.supabase.from('clients').select('*').order('name')
+            : { data: [] };
+    if ('error' in contacts && contacts.error) throw Error('Не вдалося завантажити клієнтів.');
     return (
-        <Dashboard
-            initialProjects={projects}
-            loadError={loadError}
-            userId={user.id}
-            userName={profileName(profileFromUser(user))}
-            initialProfile={profileFromUser(user)}
-        />
+        <WorkspaceShell role={c.role} name={c.name} avatar={c.profile.avatarUrl} title="Огляд">
+            <WorkspaceHome
+                projects={projects ?? []}
+                contacts={contacts.data ?? []}
+                role={c.role}
+                userId={c.user.id}
+                overview
+            />
+        </WorkspaceShell>
     );
 }
