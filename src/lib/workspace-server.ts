@@ -1,10 +1,11 @@
 import 'server-only';
+import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { profileFromUser, profileName } from '@/lib/profile';
 import type { Role } from '@/lib/workspace';
 
-export async function workspaceContext(requireMaster = false) {
+const getWorkspaceContext = cache(async () => {
     const supabase = await createSupabaseServerClient();
     if (!supabase) redirect('/login');
     const {
@@ -22,7 +23,6 @@ export async function workspaceContext(requireMaster = false) {
         );
     if (!account) redirect('/welcome');
     if (account.role === 'MASTER' && !account.username) redirect('/welcome');
-    if (requireMaster && account.role !== 'MASTER') redirect('/');
     const profile = profileFromUser(user);
     return {
         supabase,
@@ -32,4 +32,9 @@ export async function workspaceContext(requireMaster = false) {
         role: account.role as Role,
         username: account.username as string | null,
     };
+});
+export async function workspaceContext(requireMaster = false) {
+    const context = await getWorkspaceContext();
+    if (requireMaster && context.role !== 'MASTER') redirect('/');
+    return context;
 }

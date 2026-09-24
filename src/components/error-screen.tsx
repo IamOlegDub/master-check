@@ -1,8 +1,10 @@
 'use client';
 import { CloudOff, RotateCw } from 'lucide-react';
-export function ErrorScreen({ reset }: { reset: () => void }) {
+export function ErrorScreen({ reset, compact = false }: { reset: () => void; compact?: boolean }) {
     return (
-        <main className="grid min-h-dvh place-items-center bg-[#f7f8fb] p-6 text-ink">
+        <div
+            className={`grid place-items-center bg-[#f7f8fb] p-6 text-ink ${compact ? 'min-h-96' : 'min-h-dvh'}`}
+        >
             <section className="w-full max-w-lg rounded-3xl border border-line bg-white p-8 shadow-sm sm:p-12">
                 <div className="mb-6 grid size-16 place-items-center rounded-2xl bg-amber-50 text-amber-600">
                     <CloudOff size={30} />
@@ -27,6 +29,6 @@ export function ErrorScreen({ reset }: { reset: () => void }) {
                     До робочого простору
                 </a>
             </section>
-        </main>
+        </div>
     );
 }

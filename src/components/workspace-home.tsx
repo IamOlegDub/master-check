@@ -190,26 +190,32 @@ export function WorkspaceHome({
                 </form>
             )}
             <div className="flex flex-wrap gap-3">
-                <input
-                    aria-label="Пошук проєктів"
-                    className={`${inputClass} flex-1 basis-52`}
-                    placeholder="Назва об’єкта або клієнт"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                />
-                <select
-                    aria-label="Статус проєктів"
-                    className={`${inputClass} sm:w-auto`}
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                >
-                    <option value="">Усі статуси</option>
-                    {Object.entries(statusLabels).map(([k, v]) => (
-                        <option key={k} value={k}>
-                            {v}
-                        </option>
-                    ))}
-                </select>
+                <label className="grid flex-1 basis-52 gap-2">
+                    Пошук проєктів
+                    <input
+                        aria-label="Пошук проєктів"
+                        className={`${inputClass} flex-1 basis-52`}
+                        placeholder="Назва об’єкта або клієнт"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                    />
+                </label>
+                <label className="grid gap-2">
+                    Статус
+                    <select
+                        aria-label="Статус проєктів"
+                        className={`${inputClass} sm:w-auto`}
+                        value={status}
+                        onChange={(e) => setStatus(e.target.value)}
+                    >
+                        <option value="">Усі статуси</option>
+                        {Object.entries(statusLabels).map(([k, v]) => (
+                            <option key={k} value={k}>
+                                {v}
+                            </option>
+                        ))}
+                    </select>
+                </label>
             </div>
             <section className="grid gap-4 md:grid-cols-2" aria-label="Список проєктів">
                 {projects

@@ -1,5 +1,4 @@
 import { workspaceContext } from '@/lib/workspace-server';
-import { WorkspaceShell } from '@/components/workspace-shell';
 import { WorkspaceHome } from '@/components/workspace-home';
 export default async function Projects() {
     const c = await workspaceContext();
@@ -11,7 +10,7 @@ export default async function Projects() {
             : { data: [] };
     if ('error' in contacts && contacts.error) throw Error('Не вдалося завантажити клієнтів.');
     return (
-        <WorkspaceShell role={c.role} name={c.name} avatar={c.profile.avatarUrl} title="Проєкти">
+        <>
             <WorkspaceHome
                 projects={data ?? []}
                 contacts={contacts.data ?? []}
@@ -19,6 +18,6 @@ export default async function Projects() {
                 username={c.username}
                 userId={c.user.id}
             />
-        </WorkspaceShell>
+        </>
     );
 }

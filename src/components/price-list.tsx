@@ -601,55 +601,183 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                     </Button>
                                 </div>
                                 <div className="price-filters flex flex-wrap gap-2.5 pt-0 px-6 pb-5 [&_.project-search]:basis-45 [&_>_select]:border [&_>_select]:border-line [&_>_select]:rounded-[8px] [&_>_select]:p-[9px] [&_>_select]:bg-[#fff] [&_>_select]:text-[#717486] [&_>_select]:text-[12px] [&_>_select]:max-w-full max-[761px]:px-4.5">
-                                    <label className="project-search flex gap-2 items-center border border-line rounded-[8px] py-[9px] px-2.5 text-[#9295a5] min-w-0 flex-1 [&_input]:w-full [&_input]:min-w-0 [&_input]:outline-none [&_input]:text-ink [&_input]:text-[11px] [&_input]:bg-[transparent] [&:focus-within]:border-[#a59ced] max-[761px]:basis-47.5">
-                                        <Search size={17} />
-                                        <input
-                                            value={query}
-                                            onChange={(event) => setQuery(event.target.value)}
-                                            placeholder="Знайти послугу…"
-                                            aria-label="Пошук послуг"
-                                        />
+                                    <label className="grid min-w-0 flex-1 basis-52 gap-2 text-xs text-ink">
+                                        <span className="text-xs text-ink">Пошук послуг</span>
+                                        <span className="flex min-h-11 items-center gap-2 rounded-lg border border-line px-3 focus-within:border-brand">
+                                            <Search size={17} className="shrink-0 text-subtle" />
+                                            <input
+                                                className="min-w-0 w-full outline-none"
+                                                value={query}
+                                                onChange={(event) => setQuery(event.target.value)}
+                                                placeholder="Знайти послугу…"
+                                                aria-label="Пошук послуг"
+                                            />
+                                        </span>
                                     </label>
-                                    <select
-                                        aria-label="Категорія послуг"
-                                        value={categoryId}
-                                        onChange={(event) => setCategoryId(event.target.value)}
-                                    >
-                                        <option value="">Усі категорії</option>
-                                        {categories.map((category) => (
-                                            <option key={category.id} value={category.id}>
-                                                {category.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <select
-                                        aria-label="Сортування послуг"
-                                        value={sort}
-                                        onChange={(event) =>
-                                            setSort(event.target.value as ServiceSort)
-                                        }
-                                    >
-                                        <option value="category">За категоріями</option>
-                                        <option value="name">За назвою</option>
-                                        <option value="price-asc">Ціна: від нижчої</option>
-                                        <option value="price-desc">Ціна: від вищої</option>
-                                    </select>
+                                    <label className="grid gap-2 text-xs">
+                                        Категорія
+                                        <select
+                                            className="min-h-11 rounded-lg border border-line bg-white px-3"
+                                            aria-label="Категорія послуг"
+                                            value={categoryId}
+                                            onChange={(event) => setCategoryId(event.target.value)}
+                                        >
+                                            <option value="">Усі категорії</option>
+                                            {categories.map((category) => (
+                                                <option key={category.id} value={category.id}>
+                                                    {category.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+                                    <label className="grid gap-2 text-xs">
+                                        Сортування
+                                        <select
+                                            className="min-h-11 max-w-full rounded-lg border border-line bg-white px-3"
+                                            aria-label="Сортування послуг"
+                                            value={sort}
+                                            onChange={(event) =>
+                                                setSort(event.target.value as ServiceSort)
+                                            }
+                                        >
+                                            <option value="category">За категоріями</option>
+                                            <option value="name">Назва: А–Я</option>
+                                            <option value="name-desc">Назва: Я–А</option>
+                                            <option value="category-desc">Категорії: Я–А</option>
+                                            <option value="unit">Одиниці: А–Я</option>
+                                            <option value="unit-desc">Одиниці: Я–А</option>
+                                            <option value="price-asc">Ціна: від нижчої</option>
+                                            <option value="price-desc">Ціна: від вищої</option>
+                                        </select>
+                                    </label>
                                 </div>
                                 <div className="price-table-wrap overflow-x-auto max-[761px]:overflow-visible">
                                     <table className="price-table block w-full border-collapse text-xs min-[761px]:table">
                                         <thead className="max-[761px]:sr-only">
                                             <tr>
-                                                <th className="border-y border-line bg-[#fafafe] px-[18px] py-3 text-left text-[10px] font-medium text-[#838597] [&:nth-child(4)]:text-right">
-                                                    Послуга
+                                                <th
+                                                    className="border-y border-line bg-[#fafafe] px-[18px] py-3 text-left text-[10px] font-medium text-[#838597] [&:nth-child(4)]:text-right"
+                                                    scope="col"
+                                                    aria-sort={
+                                                        sort === 'name'
+                                                            ? 'ascending'
+                                                            : sort === 'name-desc'
+                                                              ? 'descending'
+                                                              : 'none'
+                                                    }
+                                                >
+                                                    <button
+                                                        className="inline-flex items-center gap-2 py-1"
+                                                        onClick={() =>
+                                                            setSort(
+                                                                sort === 'name'
+                                                                    ? 'name-desc'
+                                                                    : 'name',
+                                                            )
+                                                        }
+                                                    >
+                                                        Послуга
+                                                        <span aria-hidden>
+                                                            {sort === 'name'
+                                                                ? '↑'
+                                                                : sort === 'name-desc'
+                                                                  ? '↓'
+                                                                  : '↕'}
+                                                        </span>
+                                                    </button>
                                                 </th>
-                                                <th className="border-y border-line bg-[#fafafe] px-[18px] py-3 text-left text-[10px] font-medium text-[#838597] [&:nth-child(4)]:text-right">
-                                                    Категорія
+                                                <th
+                                                    className="border-y border-line bg-[#fafafe] px-[18px] py-3 text-left text-[10px] font-medium text-[#838597] [&:nth-child(4)]:text-right"
+                                                    scope="col"
+                                                    aria-sort={
+                                                        sort === 'category'
+                                                            ? 'ascending'
+                                                            : sort === 'category-desc'
+                                                              ? 'descending'
+                                                              : 'none'
+                                                    }
+                                                >
+                                                    <button
+                                                        className="inline-flex items-center gap-2 py-1"
+                                                        onClick={() =>
+                                                            setSort(
+                                                                sort === 'category'
+                                                                    ? 'category-desc'
+                                                                    : 'category',
+                                                            )
+                                                        }
+                                                    >
+                                                        Категорія
+                                                        <span aria-hidden>
+                                                            {sort === 'category'
+                                                                ? '↑'
+                                                                : sort === 'category-desc'
+                                                                  ? '↓'
+                                                                  : '↕'}
+                                                        </span>
+                                                    </button>
                                                 </th>
-                                                <th className="border-y border-line bg-[#fafafe] px-[18px] py-3 text-left text-[10px] font-medium text-[#838597] [&:nth-child(4)]:text-right">
-                                                    Одиниця
+                                                <th
+                                                    className="border-y border-line bg-[#fafafe] px-[18px] py-3 text-left text-[10px] font-medium text-[#838597] [&:nth-child(4)]:text-right"
+                                                    scope="col"
+                                                    aria-sort={
+                                                        sort === 'unit'
+                                                            ? 'ascending'
+                                                            : sort === 'unit-desc'
+                                                              ? 'descending'
+                                                              : 'none'
+                                                    }
+                                                >
+                                                    <button
+                                                        className="inline-flex items-center gap-2 py-1"
+                                                        onClick={() =>
+                                                            setSort(
+                                                                sort === 'unit'
+                                                                    ? 'unit-desc'
+                                                                    : 'unit',
+                                                            )
+                                                        }
+                                                    >
+                                                        Одиниця
+                                                        <span aria-hidden>
+                                                            {sort === 'unit'
+                                                                ? '↑'
+                                                                : sort === 'unit-desc'
+                                                                  ? '↓'
+                                                                  : '↕'}
+                                                        </span>
+                                                    </button>
                                                 </th>
-                                                <th className="border-y border-line bg-[#fafafe] px-[18px] py-3 text-left text-[10px] font-medium text-[#838597] [&:nth-child(4)]:text-right">
-                                                    Ціна
+                                                <th
+                                                    className="border-y border-line bg-[#fafafe] px-[18px] py-3 text-left text-[10px] font-medium text-[#838597] [&:nth-child(4)]:text-right"
+                                                    scope="col"
+                                                    aria-sort={
+                                                        sort === 'price-asc'
+                                                            ? 'ascending'
+                                                            : sort === 'price-desc'
+                                                              ? 'descending'
+                                                              : 'none'
+                                                    }
+                                                >
+                                                    <button
+                                                        className="inline-flex items-center gap-2 py-1"
+                                                        onClick={() =>
+                                                            setSort(
+                                                                sort === 'price-asc'
+                                                                    ? 'price-desc'
+                                                                    : 'price-asc',
+                                                            )
+                                                        }
+                                                    >
+                                                        Ціна
+                                                        <span aria-hidden>
+                                                            {sort === 'price-asc'
+                                                                ? '↑'
+                                                                : sort === 'price-desc'
+                                                                  ? '↓'
+                                                                  : '↕'}
+                                                        </span>
+                                                    </button>
                                                 </th>
                                                 <th className="border-y border-line bg-[#fafafe] px-[18px] py-3 text-left text-[10px] font-medium text-[#838597] [&:nth-child(4)]:text-right">
                                                     <span className="sr-only">Дії</span>

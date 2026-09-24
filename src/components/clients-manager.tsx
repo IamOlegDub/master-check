@@ -1,5 +1,5 @@
 'use client';
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type FormEvent } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ShareLink } from '@/components/share-link';
@@ -30,6 +30,39 @@ export function ClientsManager({
         [busy, setBusy] = useState(false),
         [query, setQuery] = useState(''),
         [share, setShare] = useState<{ clientId: string; url: string; title: string } | null>(null);
+    const [formOpen, setFormOpen] = useState(false);
+    const [canPick, setCanPick] = useState(false);
+    const [contactPhones, setContactPhones] = useState<string[]>([]);
+    const formRef = useRef<HTMLFormElement>(null);
+    type ContactNavigator = Navigator & {
+        contacts?: {
+            select: (
+                fields: string[],
+                options: { multiple: boolean },
+            ) => Promise<{ name?: string[]; tel?: string[] }[]>;
+        };
+    };
+    useEffect(() => {
+        setCanPick(!!(navigator as ContactNavigator).contacts?.select && window.isSecureContext);
+    }, []);
+    async function pickContact() {
+        try {
+            const chosen = await (navigator as ContactNavigator).contacts?.select(['name', 'tel'], {
+                multiple: false,
+            });
+            const contact = chosen?.[0];
+            if (!contact || !formRef.current) return;
+            const name = formRef.current.elements.namedItem('name') as HTMLInputElement;
+            const phone = formRef.current.elements.namedItem('phone') as HTMLInputElement;
+            if (contact.name?.[0]) name.value = contact.name[0].slice(0, 160);
+            if (contact.tel?.[0]) phone.value = contact.tel[0].slice(0, 30);
+            setContactPhones(Array.from(new Set(contact.tel ?? [])));
+            setError('');
+        } catch (e) {
+            if (e instanceof DOMException && e.name === 'AbortError') return;
+            setError('Не вдалося відкрити контакти. Введіть номер вручну.');
+        }
+    }
     async function save(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
         if (busy) return;
@@ -67,6 +100,7 @@ export function ClientsManager({
             );
             setEditing(null);
             form.reset();
+            setFormOpen(false);
         } catch (e) {
             setError(message(e));
         } finally {
@@ -100,59 +134,122 @@ export function ClientsManager({
                     {error}
                 </p>
             )}
-            <form key={editing?.id ?? 'new'} onSubmit={save} className={panelClass}>
-                <h2 className="text-lg font-semibold">
-                    {editing ? 'Редагувати контакт' : 'Новий контакт'}
-                </h2>
-                <fieldset disabled={busy} className="mt-4 grid gap-4 sm:grid-cols-2">
-                    <label>
-                        Ім’я
-                        <input
-                            name="name"
-                            required
-                            maxLength={160}
-                            defaultValue={editing?.name}
-                            className={inputClass}
-                        />
-                    </label>
-                    <label>
-                        Телефон
-                        <input
-                            type="tel"
-                            name="phone"
-                            maxLength={30}
-                            defaultValue={editing?.phone}
-                            className={inputClass}
-                        />
-                    </label>
-                    <label className="sm:col-span-2">
-                        Нотатки
-                        <textarea
-                            name="notes"
-                            maxLength={2000}
-                            defaultValue={editing?.notes}
-                            className={inputClass}
-                        />
-                    </label>
-                    <div className="flex gap-2">
-                        <Button type="submit" variant="brand">
-                            Зберегти
+            <Button
+                variant="brand"
+                className="justify-self-start"
+                disabled={busy}
+                aria-expanded={formOpen}
+                aria-controls="contact-form"
+                onClick={() => {
+                    setEditing(null);
+                    setFormOpen(!formOpen);
+                    setContactPhones([]);
+                }}
+            >
+                {formOpen ? 'Згорнути форму' : 'Додати контакт'}
+            </Button>
+            {formOpen && (
+                <form
+                    id="contact-form"
+                    ref={formRef}
+                    key={editing?.id ?? 'new'}
+                    onSubmit={save}
+                    className={panelClass}
+                >
+                    <h2 className="text-lg font-semibold">
+                        {editing ? 'Редагувати контакт' : 'Новий контакт'}
+                    </h2>
+                    {canPick ? (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="mt-4"
+                            disabled={busy}
+                            onClick={() => void pickContact()}
+                        >
+                            Вибрати з контактів телефона
                         </Button>
-                        {editing && (
-                            <Button type="button" variant="ghost" onClick={() => setEditing(null)}>
-                                Скасувати
+                    ) : (
+                        <p className="mt-3 text-xs text-subtle">
+                            Введіть номер або вставте його з контактів телефона.
+                        </p>
+                    )}
+                    <fieldset disabled={busy} className="mt-4 grid gap-4 sm:grid-cols-2">
+                        <label>
+                            Ім’я
+                            <input
+                                name="name"
+                                required
+                                maxLength={160}
+                                defaultValue={editing?.name}
+                                className={inputClass}
+                            />
+                        </label>
+                        <label>
+                            Телефон
+                            <input
+                                type="tel"
+                                name="phone"
+                                maxLength={30}
+                                defaultValue={editing?.phone}
+                                className={inputClass}
+                            />
+                            {contactPhones.length > 1 && (
+                                <select
+                                    className={inputClass}
+                                    aria-label="Номери вибраного контакту"
+                                    onChange={(e) => {
+                                        const input = formRef.current?.elements.namedItem(
+                                            'phone',
+                                        ) as HTMLInputElement | null;
+                                        if (input) input.value = e.target.value.slice(0, 30);
+                                    }}
+                                >
+                                    {contactPhones.map((phone) => (
+                                        <option key={phone}>{phone}</option>
+                                    ))}
+                                </select>
+                            )}
+                        </label>
+                        <label className="sm:col-span-2">
+                            Нотатки
+                            <textarea
+                                name="notes"
+                                maxLength={2000}
+                                defaultValue={editing?.notes}
+                                className={inputClass}
+                            />
+                        </label>
+                        <div className="flex gap-2">
+                            <Button type="submit" variant="brand">
+                                Зберегти
                             </Button>
-                        )}
-                    </div>
-                </fieldset>
-            </form>
-            <input
-                className={inputClass}
-                aria-label="Пошук клієнтів"
-                placeholder="Ім’я або телефон"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-            />
+                            {formOpen && (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => {
+                                        setEditing(null);
+                                        setFormOpen(false);
+                                    }}
+                                >
+                                    Скасувати
+                                </Button>
+                            )}
+                        </div>
+                    </fieldset>
+                </form>
+            )}
+            <label className="grid gap-2">
+                Пошук клієнтів
+                <input
+                    className={inputClass}
+                    aria-label="Пошук клієнтів"
+                    placeholder="Ім’я або телефон"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                />
+            </label>
             <section className="grid gap-4 md:grid-cols-2">
                 {clients
                     .filter((c) =>
@@ -233,6 +330,8 @@ export function ClientsManager({
                                     variant="outline"
                                     onClick={() => {
                                         setEditing(c);
+                                        setContactPhones([]);
+                                        setFormOpen(true);
                                         window.scrollTo({ top: 0, behavior: 'smooth' });
                                     }}
                                 >

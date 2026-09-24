@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import { workspaceContext } from '@/lib/workspace-server';
-import { WorkspaceShell } from '@/components/workspace-shell';
 import { ProjectWorkspace, type WorkflowDetail } from '@/components/project-workspace';
 export async function renderProject(c: Awaited<ReturnType<typeof workspaceContext>>, id: string) {
     const { data, error } = await c.supabase.rpc('workflow_detail', { p_project_id: id });
@@ -12,14 +11,8 @@ export async function renderProject(c: Awaited<ReturnType<typeof workspaceContex
         : { data: [] };
     if ('error' in contacts && contacts.error) throw Error('Не вдалося завантажити контакти.');
     return (
-        <WorkspaceShell
-            role={c.role}
-            name={c.name}
-            avatar={c.profile.avatarUrl}
-            title={d.project.name}
-            projectPage
-        >
+        <>
             <ProjectWorkspace initial={d} userId={c.user.id} contacts={contacts.data ?? []} />
-        </WorkspaceShell>
+        </>
     );
 }

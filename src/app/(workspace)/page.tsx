@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation';
 import { workspaceContext } from '@/lib/workspace-server';
-import { WorkspaceShell } from '@/components/workspace-shell';
 import { WorkspaceHome } from '@/components/workspace-home';
 export default async function Home({
     searchParams,
@@ -24,7 +23,7 @@ export default async function Home({
             : { data: [] };
     if ('error' in contacts && contacts.error) throw Error('Не вдалося завантажити клієнтів.');
     return (
-        <WorkspaceShell role={c.role} name={c.name} avatar={c.profile.avatarUrl} title="Огляд">
+        <>
             <WorkspaceHome
                 projects={projects ?? []}
                 contacts={contacts.data ?? []}
@@ -33,6 +32,6 @@ export default async function Home({
                 userId={c.user.id}
                 overview
             />
-        </WorkspaceShell>
+        </>
     );
 }

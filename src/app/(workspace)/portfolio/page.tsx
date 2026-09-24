@@ -1,5 +1,4 @@
 import { workspaceContext } from '@/lib/workspace-server';
-import { WorkspaceShell } from '@/components/workspace-shell';
 import { PortfolioManager } from '@/components/portfolio-manager';
 export default async function Portfolio() {
     const c = await workspaceContext(true);
@@ -16,7 +15,7 @@ export default async function Portfolio() {
     if (albums.error || photos.error || categories.error || account.error)
         throw Error('Не вдалося відкрити портфоліо.');
     return (
-        <WorkspaceShell role={c.role} name={c.name} avatar={c.profile.avatarUrl} title="Портфоліо">
+        <>
             <PortfolioManager
                 initial={albums.data}
                 initialPhotos={photos.data}
@@ -25,6 +24,6 @@ export default async function Portfolio() {
                 publicToken={account.data.portfolio_token}
                 isPublic={account.data.portfolio_public}
             />
-        </WorkspaceShell>
+        </>
     );
 }

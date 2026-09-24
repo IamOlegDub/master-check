@@ -7,12 +7,14 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 export type GalleryPhoto = { path: string; caption?: string };
 export function PhotoGallery({
     bucket,
-    photos,
+    photos: allPhotos,
+    preview = false,
     onDelete,
     busy = false,
 }: {
     bucket: 'reports' | 'portfolio';
     photos: GalleryPhoto[];
+    preview?: boolean;
     onDelete?: (photo: GalleryPhoto) => void;
     busy?: boolean;
 }) {
@@ -21,6 +23,7 @@ export function PhotoGallery({
         [active, setActive] = useState<number | null>(null),
         [list, setList] = useState(false),
         [retry, setRetry] = useState(0);
+    const photos = preview ? allPhotos.slice(0, 3) : allPhotos;
     const signature = photos.map((p) => p.path).join('|');
     useEffect(() => {
         let live = true;
@@ -51,8 +54,8 @@ export function PhotoGallery({
     if (!photos.length) return null;
     return (
         <div className="mt-4">
-            <div className="mb-3 flex gap-4 text-xs text-brand">
-                <button onClick={() => setList(!list)}>
+            <div hidden={preview && !error} className="mb-3 flex gap-4 text-xs text-brand">
+                <button hidden={preview} onClick={() => setList(!list)}>
                     {list ? 'Показати сіткою' : 'Показати списком'}
                 </button>
                 <button onClick={() => setRetry((x) => x + 1)}>Оновити фото</button>
@@ -62,9 +65,16 @@ export function PhotoGallery({
                     {error}
                 </p>
             )}
-            <div className={list ? 'grid gap-4' : 'grid grid-cols-2 gap-3 sm:grid-cols-3'}>
+            <div
+                className={
+                    list && !preview ? 'grid gap-4' : 'grid grid-cols-2 gap-3 sm:grid-cols-3'
+                }
+            >
                 {photos.map((photo, index) => (
-                    <div key={photo.path} className="relative min-w-0">
+                    <div
+                        key={photo.path}
+                        className={`relative min-w-0 ${preview && index === 2 ? 'hidden sm:block' : ''}`}
+                    >
                         <button
                             type="button"
                             key={photo.path}
@@ -83,7 +93,7 @@ export function PhotoGallery({
                                         )
                                     }
                                     className={
-                                        list
+                                        list && !preview
                                             ? 'max-h-[65svh] w-full object-contain'
                                             : 'aspect-square w-full object-cover'
                                     }
@@ -95,7 +105,7 @@ export function PhotoGallery({
                                     className="aspect-square w-full bg-[#eeedf5] motion-safe:animate-pulse"
                                 />
                             )}
-                            {photo.caption && (
+                            {!preview && photo.caption && (
                                 <span className="block p-3 text-xs wrap-anywhere">
                                     {photo.caption}
                                 </span>

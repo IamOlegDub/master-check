@@ -24,11 +24,7 @@ export function BusyIndicator({
 }
 export function WorkspaceSkeleton() {
     return (
-        <main
-            aria-busy="true"
-            aria-label="Завантаження сторінки"
-            className="min-h-dvh bg-[#f7f8fb] p-5 pb-28 sm:p-10"
-        >
+        <section aria-busy="true" aria-label="Завантаження сторінки" className="w-full py-4">
             <span role="status" className="sr-only">
                 Завантажуємо робочий простір…
             </span>
@@ -50,6 +46,6 @@ export function WorkspaceSkeleton() {
                     ))}
                 </div>
             </div>
-        </main>
+        </section>
     );
 }

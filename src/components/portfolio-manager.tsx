@@ -48,6 +48,9 @@ export function PortfolioManager({
         [deleting, setDeleting] = useState<{ album: Album; photo?: Photo; all?: boolean } | null>(
             null,
         );
+    const [newAlbumOpen, setNewAlbumOpen] = useState(false);
+    const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+    const [mediaOpen, setMediaOpen] = useState<Record<string, boolean>>({});
     async function reload() {
         const c = createSupabaseBrowserClient();
         if (!c) return;
@@ -83,6 +86,7 @@ export function PortfolioManager({
             setCategory('');
             form.reset();
             await reload();
+            setNewAlbumOpen(false);
         } catch (e) {
             setError(message(e));
         } finally {
@@ -224,68 +228,80 @@ export function PortfolioManager({
                         </button>
                     ))}
             </section>
-            <form onSubmit={create} className={panelClass}>
-                <h2 className="text-lg font-semibold">Новий альбом</h2>
-                <fieldset disabled={busy} className="mt-4 grid gap-4 sm:grid-cols-2">
-                    <label>
-                        Назва
-                        <input
-                            name="title"
-                            required
-                            maxLength={160}
-                            placeholder="Будинок у Бережанах"
-                            className={inputClass}
-                        />
-                    </label>
-                    <label>
-                        Категорії послуг
-                        <input
-                            list="portfolio-categories"
-                            className={inputClass}
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                            placeholder="Почніть вводити: плитка, меблі…"
-                        />
-                        <datalist id="portfolio-categories">
-                            {categories.map((c) => (
-                                <option key={c.id} value={c.name} />
-                            ))}
-                        </datalist>
-                        <button
-                            type="button"
-                            className="mt-2 text-brand"
-                            onClick={() => {
-                                const found = categories.find((c) => c.name === category);
-                                if (found) {
-                                    setSelected((s) => Array.from(new Set([...s, found.id])));
-                                    setCategory('');
-                                }
-                            }}
-                        >
-                            Додати категорію
-                        </button>
-                    </label>
-                    <div className="flex flex-wrap gap-2 sm:col-span-2">
-                        {selected.map((id) => (
+            <Button
+                variant="brand"
+                className="justify-self-start"
+                disabled={busy}
+                aria-expanded={newAlbumOpen}
+                aria-controls="new-album"
+                onClick={() => setNewAlbumOpen(!newAlbumOpen)}
+            >
+                {newAlbumOpen ? 'Згорнути форму' : 'Додати альбом'}
+            </Button>
+            {newAlbumOpen && (
+                <form id="new-album" onSubmit={create} className={panelClass}>
+                    <h2 className="text-lg font-semibold">Новий альбом</h2>
+                    <fieldset disabled={busy} className="mt-4 grid gap-4 sm:grid-cols-2">
+                        <label>
+                            Назва
+                            <input
+                                name="title"
+                                required
+                                maxLength={160}
+                                placeholder="Будинок у Бережанах"
+                                className={inputClass}
+                            />
+                        </label>
+                        <label>
+                            Категорії послуг
+                            <input
+                                list="portfolio-categories"
+                                className={inputClass}
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                                placeholder="Почніть вводити: плитка, меблі…"
+                            />
+                            <datalist id="portfolio-categories">
+                                {categories.map((c) => (
+                                    <option key={c.id} value={c.name} />
+                                ))}
+                            </datalist>
                             <button
                                 type="button"
-                                key={id}
-                                onClick={() => setSelected((s) => s.filter((x) => x !== id))}
-                                className="rounded-lg bg-[#efedfc] p-2 text-brand"
+                                className="mt-2 text-brand"
+                                onClick={() => {
+                                    const found = categories.find((c) => c.name === category);
+                                    if (found) {
+                                        setSelected((s) => Array.from(new Set([...s, found.id])));
+                                        setCategory('');
+                                    }
+                                }}
                             >
-                                {categories.find((c) => c.id === id)?.name} ×
+                                Додати категорію
                             </button>
-                        ))}
-                    </div>
-                    <label className="sm:col-span-2">
-                        Опис
-                        <textarea name="description" maxLength={2000} className={inputClass} />
-                    </label>
-                    <Button type="submit" variant="brand">
-                        Створити альбом
-                    </Button>
-                </fieldset>
-            </form>
+                        </label>
+                        <div className="flex flex-wrap gap-2 sm:col-span-2">
+                            {selected.map((id) => (
+                                <button
+                                    type="button"
+                                    key={id}
+                                    onClick={() => setSelected((s) => s.filter((x) => x !== id))}
+                                    className="rounded-lg bg-[#efedfc] p-2 text-brand"
+                                >
+                                    {categories.find((c) => c.id === id)?.name} ×
+                                </button>
+                            ))}
+                        </div>
+                        <label className="sm:col-span-2">
+                            Опис
+                            <textarea name="description" maxLength={2000} className={inputClass} />
+                        </label>
+                        <Button type="submit" variant="brand">
+                            Створити альбом
+                        </Button>
+                    </fieldset>
+                </form>
+            )}
             {!albums.length && <p className="text-subtle">Альбомів поки немає.</p>}
             {albums.map((album) => (
                 <section key={album.id} className={panelClass}>
@@ -300,7 +316,7 @@ export function PortfolioManager({
                                     .join(', ')}
                             </p>
                         </div>
-                        <div className="flex gap-2">
+                        <div hidden={!expanded[album.id]} className="flex gap-2">
                             <Button
                                 disabled={busy}
                                 variant="outline"
@@ -317,10 +333,13 @@ export function PortfolioManager({
                             </Button>
                         </div>
                     </div>
-                    <p className="my-4 whitespace-pre-wrap wrap-anywhere text-subtle">
+                    <p
+                        className={`my-4 whitespace-pre-wrap wrap-anywhere text-subtle ${expanded[album.id] ? '' : 'line-clamp-1'}`}
+                    >
                         {album.description}
                     </p>
-                    {album.published &&
+                    {expanded[album.id] &&
+                        album.published &&
                         (origin ? (
                             <ShareLink
                                 url={`${origin}/share/${album.share_token}`}
@@ -336,6 +355,7 @@ export function PortfolioManager({
                         ))}
                     <PhotoGallery
                         bucket="portfolio"
+                        preview={!expanded[album.id]}
                         photos={photos.filter((p) => p.album_id === album.id)}
                         busy={busy}
                         onDelete={(photo) =>
@@ -345,53 +365,90 @@ export function PortfolioManager({
                             })
                         }
                     />
-                    {photos.some((p) => p.album_id === album.id) && (
-                        <button
-                            disabled={busy}
-                            onClick={() => setDeleting({ album, all: true })}
-                            className="mt-4 flex items-center gap-2 text-xs text-red-700"
-                        >
-                            <Trash2 size={16} />
-                            Видалити всі фото
-                        </button>
-                    )}
-                    <OverviewVideo
-                        path={album.overview_video_path}
-                        addedAt={album.overview_video_at}
-                        owner
-                        userId={userId}
-                        albumId={album.id}
-                        onChanged={() => void reload().catch((e) => setError(message(e)))}
-                    />
-                    <form
-                        onSubmit={(e) => void upload(e, album)}
-                        className="mt-5 border-t border-line pt-5"
+                    <Button
+                        variant="outline"
+                        className="mt-4"
+                        disabled={busy}
+                        aria-expanded={!!expanded[album.id]}
+                        aria-controls={`album-${album.id}`}
+                        onClick={() => {
+                            setExpanded((x) => ({ ...x, [album.id]: !x[album.id] }));
+                            setMediaOpen((x) => ({ ...x, [album.id]: false }));
+                        }}
                     >
-                        <fieldset disabled={busy} className="grid gap-3 sm:grid-cols-2">
-                            <label>
-                                Фото (JPG / PNG / WebP, до 10 МБ кожне)
-                                <input
-                                    name="photos"
-                                    type="file"
-                                    multiple
-                                    accept="image/jpeg,image/png,image/webp"
-                                    required
-                                    className={inputClass}
-                                />
-                                <span className="mt-2 block text-xs text-subtle">
-                                    Перед завантаженням фото стискається до 2048 px; у сховище
-                                    потрапляє оптимізована копія.
-                                </span>
-                            </label>
-                            <label>
-                                Підпис
-                                <input name="caption" maxLength={500} className={inputClass} />
-                            </label>
-                            <Button type="submit" variant="brand">
-                                {busy ? 'Завантажуємо…' : 'Додати фото'}
-                            </Button>
-                        </fieldset>
-                    </form>
+                        {expanded[album.id]
+                            ? 'Згорнути альбом'
+                            : `Розгорнути альбом · ${photos.filter((p) => p.album_id === album.id).length} фото`}
+                    </Button>
+                    <div id={`album-${album.id}`} hidden={!expanded[album.id]}>
+                        {photos.some((p) => p.album_id === album.id) && (
+                            <button
+                                disabled={busy}
+                                onClick={() => setDeleting({ album, all: true })}
+                                className="mt-4 flex items-center gap-2 text-xs text-red-700"
+                            >
+                                <Trash2 size={16} />
+                                Видалити всі фото
+                            </button>
+                        )}
+                        <Button
+                            variant="outline"
+                            className="mt-4"
+                            disabled={busy}
+                            aria-expanded={!!mediaOpen[album.id]}
+                            aria-controls={`media-${album.id}`}
+                            onClick={() =>
+                                setMediaOpen((x) => ({ ...x, [album.id]: !x[album.id] }))
+                            }
+                        >
+                            {mediaOpen[album.id] ? 'Закрити додавання медіа' : 'Додати медіа'}
+                        </Button>
+                        {expanded[album.id] && (
+                            <OverviewVideo
+                                path={album.overview_video_path}
+                                addedAt={album.overview_video_at}
+                                owner={!!mediaOpen[album.id]}
+                                userId={userId}
+                                albumId={album.id}
+                                onChanged={() => void reload().catch((e) => setError(message(e)))}
+                            />
+                        )}
+                        <div id={`media-${album.id}`} hidden={!mediaOpen[album.id]}>
+                            <form
+                                onSubmit={(e) => void upload(e, album)}
+                                className="mt-5 border-t border-line pt-5"
+                            >
+                                <fieldset disabled={busy} className="grid gap-3 sm:grid-cols-2">
+                                    <label>
+                                        Фото (JPG / PNG / WebP, до 10 МБ кожне)
+                                        <input
+                                            name="photos"
+                                            type="file"
+                                            multiple
+                                            accept="image/jpeg,image/png,image/webp"
+                                            required
+                                            className={inputClass}
+                                        />
+                                        <span className="mt-2 block text-xs text-subtle">
+                                            Перед завантаженням фото стискається до 2048 px; у
+                                            сховище потрапляє оптимізована копія.
+                                        </span>
+                                    </label>
+                                    <label>
+                                        Підпис
+                                        <input
+                                            name="caption"
+                                            maxLength={500}
+                                            className={inputClass}
+                                        />
+                                    </label>
+                                    <Button type="submit" variant="brand">
+                                        {busy ? 'Завантажуємо…' : 'Додати фото'}
+                                    </Button>
+                                </fieldset>
+                            </form>
+                        </div>
+                    </div>
                 </section>
             ))}
         </>

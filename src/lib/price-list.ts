@@ -21,7 +21,15 @@ export type Service = {
     unit: ServiceUnit;
     created_at: string;
 };
-export type ServiceSort = 'category' | 'name' | 'price-asc' | 'price-desc';
+export type ServiceSort =
+    | 'category'
+    | 'category-desc'
+    | 'name'
+    | 'name-desc'
+    | 'unit'
+    | 'unit-desc'
+    | 'price-asc'
+    | 'price-desc';
 
 export function formatPrice(value: number) {
     const [whole, fraction] = Number(value).toFixed(2).split('.');
@@ -51,8 +59,15 @@ export function selectServices(
             if (sort === 'price-asc') return Number(a.price) - Number(b.price) || byName;
             if (sort === 'price-desc') return Number(b.price) - Number(a.price) || byName;
             if (sort === 'name') return byName;
+            if (sort === 'name-desc') return -byName;
+            if (sort === 'unit' || sort === 'unit-desc')
+                return (
+                    compare(serviceUnits[a.unit], serviceUnits[b.unit]) *
+                        (sort === 'unit' ? 1 : -1) || byName
+                );
             return (
-                compare(names.get(a.category_id) ?? '', names.get(b.category_id) ?? '') || byName
+                compare(names.get(a.category_id) ?? '', names.get(b.category_id) ?? '') *
+                    (sort === 'category-desc' ? -1 : 1) || byName
             );
         });
 }

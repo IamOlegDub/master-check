@@ -1,5 +1,4 @@
 import { workspaceContext } from '@/lib/workspace-server';
-import { WorkspaceShell } from '@/components/workspace-shell';
 import { ClientsManager } from '@/components/clients-manager';
 export default async function Clients() {
     const c = await workspaceContext(true);
@@ -15,7 +14,7 @@ export default async function Clients() {
     if (contacts.error || projects.error || account.error)
         throw Error('Не вдалося завантажити контакти.');
     return (
-        <WorkspaceShell role={c.role} name={c.name} avatar={c.profile.avatarUrl} title="Клієнти">
+        <>
             <ClientsManager
                 initial={contacts.data}
                 projects={projects.data.map((p) => ({ ...p, owner_username: c.username }))}
@@ -24,6 +23,6 @@ export default async function Clients() {
                     account.data.portfolio_public ? account.data.portfolio_token : undefined
                 }
             />
-        </WorkspaceShell>
+        </>
     );
 }

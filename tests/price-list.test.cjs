@@ -25,6 +25,17 @@ test('category and search filters combine; numeric prices sort without mutating 
     assert.deepEqual(services.map(s => s.id), ['1', '2', '3']);
 });
 
+test('all service columns support both sort directions', () => {
+    const ids = sort => selectServices(services, categories, '', '', sort).map(s => s.id);
+    assert.deepEqual(ids('name'), ['3', '1', '2']);
+    assert.deepEqual(ids('name-desc'), ['2', '1', '3']);
+    assert.deepEqual(ids('category'), ['2', '3', '1']);
+    assert.deepEqual(ids('category-desc'), ['3', '1', '2']);
+    assert.deepEqual(ids('unit'), ['3', '1', '2']);
+    assert.deepEqual(ids('unit-desc'), ['2', '1', '3']);
+    assert.deepEqual(ids('price-desc'), ['2', '1', '3']);
+});
+
 test('valid prices include zero; invalid precision, missing category and unsupported units are rejected', () => {
     for (const unit of Object.keys(serviceUnits)) assert.equal(validateService('Service', '0', unit, 'tile'), null);
     assert.equal(validateService('Service', '9999999999.99', 'm2', 'tile'), null);
