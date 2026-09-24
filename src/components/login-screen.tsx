@@ -1,7 +1,8 @@
 ﻿'use client';
 
 import { useState } from 'react';
-import { ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowRight, ShieldCheck } from 'lucide-react';
+import { BrandLogo } from '@/components/brand-logo';
 
 import { Button } from '@/components/ui/button';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
@@ -43,9 +44,7 @@ export function LoginScreen({
     return (
         <main className="login-page text-ink [background:radial-gradient(ellipse_at_50%_35%,_#efedf9_0%,_#f7f8fb_65%)] min-h-dvh text-[14px] tracking-[-.015em] [&_button]:cursor-pointer [&_button:disabled]:cursor-not-allowed [&_:is(button,_a):focus-visible]:[outline:3px_solid_#a59ced] [&_:is(button,_a):focus-visible]:[outline-offset:3px] motion-reduce:[&_*]:transition-none! motion-reduce:[&_*]:animate-none! flex flex-col items-center justify-center pt-25 px-5 pb-15">
             <div className="login-brand absolute top-8 left-10 max-[481px]:left-5.5 max-[481px]:top-[23px] workspace-brand flex items-center gap-[11px] text-ink font-[650] text-[15px] no-underline">
-                <span className="brand-mark inline-flex items-center justify-center w-[39px] h-[39px] rounded-[12px] bg-brand text-[#fff] shadow-[0_4px_10px_#6155db20] shrink-0">
-                    <Sparkles size={20} />
-                </span>
+                <BrandLogo decorative className="size-11" />
                 <span>
                     Мій кошторис
                     <span className="brand-caption block text-subtle font-normal text-[11px] mt-[3px]">
@@ -55,7 +54,7 @@ export function LoginScreen({
             </div>
             <section className="login-card w-full max-w-107.5 p-10 border border-[#e8e5f0] rounded-[20px] bg-[#ffffffed] shadow-[0_20px_70px_#39314a07] text-center [&_.eyebrow]:text-[8px] [&_h1]:text-[36px] [&_h1]:tracking-[-.05em] [&_h1]:font-[550] [&_h1]:leading-[1.2] [&_h1]:mt-[17px] [&_h1_>_span]:text-[#8f82c4] [&_.workspace-error]:mt-4 [&_.workspace-error]:text-left max-[481px]:py-7.5 max-[481px]:px-[23px] max-[481px]:[&_h1]:text-[33px]">
                 <span className="login-welcome-icon inline-flex items-center justify-center w-14 h-14 bg-[#f0edfc] text-[#8b7bce] rounded-[16px] mb-[25px]">
-                    <Sparkles size={26} strokeWidth={1.5} />
+                    <BrandLogo decorative className="size-12" />
                 </span>
                 <p className="eyebrow block text-[#89859e] text-[9px] font-semibold tracking-[.13em]">
                     МЕНШЕ РУТИНИ. БІЛЬШЕ ЗРОБЛЕНОГО.

@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { validId, panelClass } from '@/lib/workspace';
 import { PhotoGallery } from '@/components/photo-gallery';
 import { OverviewVideo } from '@/components/overview-video';
+import { BrandLogo } from '@/components/brand-logo';
 export const dynamic = 'force-dynamic';
 type PublicAlbum = {
     id: string;
@@ -26,7 +27,10 @@ export default async function Shared({ params }: { params: Promise<{ token: stri
         <main className="min-h-dvh bg-[#f7f8fb] p-4 text-ink sm:p-8">
             <div className="mx-auto grid max-w-6xl gap-6">
                 <header>
-                    <p className="text-sm text-brand">Мій кошторис · Портфоліо майстра</p>
+                    <p className="flex items-center gap-3 text-sm text-brand">
+                        <BrandLogo decorative />
+                        Мій кошторис · Портфоліо майстра
+                    </p>
                     <h1 className="mt-3 text-3xl font-semibold">Виконані роботи</h1>
                 </header>
                 {albums.map((a) => (

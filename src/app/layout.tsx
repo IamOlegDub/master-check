@@ -13,7 +13,10 @@ export const metadata: Metadata = {
     title: 'Мій кошторис | Кабінет майстра',
     description: 'Кошториси, проекти та портфоліо майстра в одному кабінеті.',
     appleWebApp: { capable: true, title: 'Master Check', statusBarStyle: 'default' },
-    icons: { apple: '/icons/icon-192.png' },
+    icons: {
+        icon: [{ url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
+        apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    },
 };
 
 export const viewport: Viewport = {

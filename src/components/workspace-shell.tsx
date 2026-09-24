@@ -2,7 +2,8 @@
 import { type ReactNode, useState, createContext, useContext } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ClipboardList, Hammer, Camera, Users, Sparkles } from 'lucide-react';
+import { Home, ClipboardList, Hammer, Camera, Users } from 'lucide-react';
+import { BrandLogo } from '@/components/brand-logo';
 import { AccountMenu } from '@/components/account-menu';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { Role } from '@/lib/workspace';
@@ -64,7 +65,7 @@ export function WorkspaceShell({
             <div className="min-h-dvh bg-[#f7f8fb] text-sm text-ink">
                 <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-line bg-white p-5 lg:flex">
                     <Link href="/" className="mb-12 flex items-center gap-3 text-lg font-semibold">
-                        <Sparkles className="text-brand" />
+                        <BrandLogo decorative className="size-9" />
                         Мій кошторис
                     </Link>
                     <p className="mb-4 text-xs text-subtle">
@@ -103,7 +104,8 @@ export function WorkspaceShell({
                             aria-label="Шлях навігації"
                             className="flex min-w-0 flex-wrap items-center gap-2 text-xs"
                         >
-                            <Link href="/" className="py-3 text-subtle">
+                            <Link href="/" className="flex items-center gap-2 py-3 text-subtle">
+                                <BrandLogo decorative className="size-7 lg:hidden" />
                                 Огляд
                             </Link>
                             {path !== '/' && (
