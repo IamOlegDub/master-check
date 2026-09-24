@@ -61,6 +61,7 @@ export function ProjectWorkspace({
     contacts: Contact[];
 }) {
     const router = useRouter();
+    const [showRevision, setShowRevision] = useState(false);
     const [data, setData] = useState(initial),
         [error, setError] = useState(''),
         [notice, setNotice] = useState(''),
@@ -205,6 +206,40 @@ export function ProjectWorkspace({
     return (
         <>
             <BusyIndicator busy={busy} label="Оновлюємо проєкт…" />
+            {showRevision && (
+                <ActionModal
+                    title="Додати роботи до кошторису"
+                    onClose={() => setShowRevision(false)}
+                    busy={busy}
+                    error={error}
+                >
+                    <p className="text-subtle">
+                        Кошторис уже на погодженні або в роботі. Відкрийте нову редакцію, додайте
+                        потрібні послуги та надішліть кошторис замовнику повторно. Збережені оплати
+                        й підтверджені роботи залишаться.
+                    </p>
+                    {data.reports.some((r) => r.status === 'SUBMITTED') ? (
+                        <p className="mt-4 rounded-xl bg-amber-50 p-4 text-amber-900">
+                            Спочатку замовник має перевірити надіслані звіти. Після цього можна
+                            змінити кошторис.
+                        </p>
+                    ) : (
+                        <Button
+                            variant="brand"
+                            className="mt-5"
+                            disabled={busy}
+                            onClick={async () => {
+                                if (await action('revise')) {
+                                    setShowRevision(false);
+                                    setTab('estimate');
+                                }
+                            }}
+                        >
+                            Відкрити нову редакцію
+                        </Button>
+                    )}
+                </ActionModal>
+            )}
             <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                     <span className="rounded-lg bg-[#efedfc] px-3 py-1 text-xs text-brand">
@@ -659,6 +694,7 @@ export function ProjectWorkspace({
                     openPriceList={() => router.push('/services')}
                     workflowMode
                     estimateLocked={p.status !== 'DRAFT'}
+                    onRevise={p.status === 'COMPLETED' ? undefined : () => setShowRevision(true)}
                     view={tab}
                 />
             ) : !owner ? (

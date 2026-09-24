@@ -7,6 +7,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { formatPrice } from '@/lib/price-list';
 import { projectHref, projectSlug } from '@/lib/project-url';
 import { BusyIndicator } from '@/components/feedback';
+import { ProjectPaymentStatus } from '@/components/project-payment-status';
 import {
     statusLabels,
     inputClass,
@@ -238,7 +239,10 @@ export function WorkspaceHome({
                             <h2 className="my-3 text-xl font-semibold wrap-anywhere">{p.name}</h2>
                             <p className="text-subtle">{p.client || 'Замовника ще не вказано'}</p>
                             <p className="mt-4">Кошторис: {formatPrice(Number(p.total))}</p>
-                            <p>Баланс: {formatPrice(Number(p.confirmed_total) - Number(p.paid))}</p>
+                            <ProjectPaymentStatus
+                                confirmed={Number(p.confirmed_total)}
+                                paid={Number(p.paid)}
+                            />
                             <div className="mt-4 flex justify-between text-xs">
                                 <span>Підтверджений прогрес</span>
                                 <span>{p.progress}%</span>

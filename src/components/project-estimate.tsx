@@ -3,10 +3,16 @@
 import { ActionModal } from '@/components/action-modal';
 import { BusyIndicator } from '@/components/feedback';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
-import { Check, Clock3, Pencil, Plus, RefreshCw, Trash2, Wallet, X } from 'lucide-react';
+import { Check, Clock3, Pencil, Plus, RefreshCw, Trash2, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
-import { formatPrice, serviceUnits, type Service } from '@/lib/price-list';
+import {
+    formatPrice,
+    serviceUnits,
+    selectServices,
+    type Service,
+    type ServiceCategory,
+} from '@/lib/price-list';
 import { projectStatuses, type Project } from '@/lib/projects';
 import {
     calculateLineTotal,
@@ -63,6 +69,7 @@ export function ProjectEstimate({
     openPriceList,
     workflowMode = false,
     estimateLocked = false,
+    onRevise,
     view = 'estimate',
 }: {
     projectId: string;
@@ -71,10 +78,14 @@ export function ProjectEstimate({
     openPriceList: () => void;
     workflowMode?: boolean;
     estimateLocked?: boolean;
+    onRevise?: () => void;
     view?: 'estimate' | 'payments';
 }) {
     const [detail, setDetail] = useState<ProjectDetail | null>(null);
     const [services, setServices] = useState<Service[]>([]);
+    const [categories, setCategories] = useState<ServiceCategory[]>([]);
+    const [categoryId, setCategoryId] = useState('');
+    const [catalogueLoading, setCatalogueLoading] = useState(false);
     const [catalogueError, setCatalogueError] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -97,6 +108,11 @@ export function ProjectEstimate({
     const [actionNote, setActionNote] = useState('');
     const loadId = useRef(0);
     const selectedService = services.find((service) => service.id === serviceId);
+    const matchingServices = selectServices(services, categories, categoryId, search, 'name');
+    const visibleServices =
+        selectedService && !matchingServices.some((s) => s.id === selectedService.id)
+            ? [selectedService, ...matchingServices]
+            : matchingServices;
     const preview = calculateLineTotal(
         quantity,
         editing ? price : String(selectedService?.price ?? 0),
@@ -115,9 +131,10 @@ export function ProjectEstimate({
             const { data: auth } = await client.auth.getUser();
             if (auth.user?.id !== userId)
                 throw new Error('Акаунт змінився або сесія завершилась. Оновіть сторінку.');
-            const [result, catalogue] = await Promise.all([
+            const [result, catalogue, groups] = await Promise.all([
                 client.rpc('project_detail', { p_project_id: projectId }),
                 client.from('services').select('*').eq('user_id', userId).order('name'),
+                client.from('service_categories').select('*').eq('user_id', userId).order('name'),
             ]);
             if (id !== loadId.current) return;
             if (result.error) throw new Error(estimateError(result.error));
@@ -125,6 +142,7 @@ export function ProjectEstimate({
             setDetail(data);
             onProjectChange(data.project);
             setServices((catalogue.data ?? []) as Service[]);
+            setCategories((groups.data ?? []) as ServiceCategory[]);
             setCatalogueError(
                 catalogue.error
                     ? 'Не вдалося завантажити ваш прайс. Оновіть дані перед додаванням робіт.'
@@ -202,6 +220,8 @@ export function ProjectEstimate({
         setEditing(item ?? null);
         setServiceId('');
         setSearch('');
+        setCategoryId('');
+        if (!item) void refreshCatalogue();
         setQuantity(String(item?.quantity ?? 1));
         setPrice(String(item?.unit_price ?? 0));
         setAdjustment(String(item?.adjustment_percent ?? 0));
@@ -210,6 +230,25 @@ export function ProjectEstimate({
         setAction(null);
         setError('');
         setNotice('');
+    }
+    async function refreshCatalogue() {
+        setCatalogueLoading(true);
+        setCatalogueError('');
+        try {
+            const client = createSupabaseBrowserClient();
+            if (!client) throw Error();
+            const [catalogue, groups] = await Promise.all([
+                client.from('services').select('*').eq('user_id', userId).order('name'),
+                client.from('service_categories').select('*').eq('user_id', userId).order('name'),
+            ]);
+            if (catalogue.error || groups.error) throw Error();
+            setServices(catalogue.data);
+            setCategories(groups.data);
+        } catch {
+            setCatalogueError('Не вдалося оновити прайс. Спробуйте ще раз.');
+        } finally {
+            setCatalogueLoading(false);
+        }
     }
     function openAction(next: Action) {
         setAction(next);
@@ -409,9 +448,9 @@ export function ProjectEstimate({
                                 </Button>
                                 <Button
                                     variant="brand"
-                                    disabled={disabled || estimateLocked}
+                                    disabled={disabled || (estimateLocked && !onRevise)}
                                     hidden={view !== 'estimate'}
-                                    onClick={() => openItem()}
+                                    onClick={() => (estimateLocked ? onRevise?.() : openItem())}
                                 >
                                     <Plus size={17} />
                                     Додати роботу
@@ -446,16 +485,28 @@ export function ProjectEstimate({
                                                 прайсу її не змінить.
                                             </p>
                                         </div>
-                                        <button
-                                            className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[#f1f1f8]"
-                                            aria-label="Закрити роботу"
-                                            disabled={disabled}
-                                            onClick={() => setItemForm(false)}
-                                        >
-                                            <X size={18} />
-                                        </button>
                                     </div>
-                                    {!editing && !services.length ? (
+                                    {!editing && (
+                                        <div className="px-6 pb-4 text-sm">
+                                            {catalogueLoading && (
+                                                <p role="status">Оновлюємо прайс…</p>
+                                            )}
+                                            {catalogueError && (
+                                                <p role="alert" className="text-red-700">
+                                                    {catalogueError}
+                                                </p>
+                                            )}
+                                            <button
+                                                type="button"
+                                                disabled={catalogueLoading}
+                                                className="mt-2 text-brand"
+                                                onClick={() => void refreshCatalogue()}
+                                            >
+                                                Оновити список послуг
+                                            </button>
+                                        </div>
+                                    )}
+                                    {!editing && !services.length && !catalogueLoading ? (
                                         <div className="category-help pt-0 px-6 pb-5 text-subtle text-[11px] leading-[1.7]">
                                             <p>Спочатку додайте послуги та ціни у свій прайс.</p>
                                             <Button
@@ -486,6 +537,46 @@ export function ProjectEstimate({
                                                             />
                                                         </label>
                                                         <label>
+                                                            Категорія
+                                                            <select
+                                                                className="mt-2 block min-h-11 w-full rounded-lg border border-line bg-white px-3"
+                                                                value={categoryId}
+                                                                onChange={(e) => {
+                                                                    setCategoryId(e.target.value);
+                                                                    setServiceId('');
+                                                                }}
+                                                            >
+                                                                <option value="">
+                                                                    Усі категорії
+                                                                </option>
+                                                                {categories.map((c) => (
+                                                                    <option key={c.id} value={c.id}>
+                                                                        {c.name}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                            {!matchingServices.length &&
+                                                                !catalogueLoading && (
+                                                                    <span
+                                                                        role="status"
+                                                                        className="mt-2 block text-sm"
+                                                                    >
+                                                                        За цими фільтрами послуг
+                                                                        немає.{' '}
+                                                                        <button
+                                                                            type="button"
+                                                                            className="text-brand underline"
+                                                                            onClick={() => {
+                                                                                setSearch('');
+                                                                                setCategoryId('');
+                                                                            }}
+                                                                        >
+                                                                            Показати всі послуги
+                                                                        </button>
+                                                                    </span>
+                                                                )}
+                                                        </label>
+                                                        <label className="sm:col-span-2">
                                                             Послуга
                                                             <select
                                                                 className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
@@ -498,40 +589,19 @@ export function ProjectEstimate({
                                                                 <option value="">
                                                                     Оберіть послугу
                                                                 </option>
-                                                                {services
-                                                                    .filter(
-                                                                        (service) =>
-                                                                            service.id ===
-                                                                                serviceId ||
-                                                                            service.name
-                                                                                .toLocaleLowerCase(
-                                                                                    'uk-UA',
-                                                                                )
-                                                                                .includes(
-                                                                                    search.toLocaleLowerCase(
-                                                                                        'uk-UA',
-                                                                                    ),
-                                                                                ),
-                                                                    )
-                                                                    .map((service) => (
-                                                                        <option
-                                                                            key={service.id}
-                                                                            value={service.id}
-                                                                        >
-                                                                            {service.name} ·{' '}
-                                                                            {formatPrice(
-                                                                                Number(
-                                                                                    service.price,
-                                                                                ),
-                                                                            )}
-                                                                            /
-                                                                            {
-                                                                                serviceUnits[
-                                                                                    service.unit
-                                                                                ]
-                                                                            }
-                                                                        </option>
-                                                                    ))}
+                                                                {visibleServices.map((service) => (
+                                                                    <option
+                                                                        key={service.id}
+                                                                        value={service.id}
+                                                                    >
+                                                                        {service.name} ·{' '}
+                                                                        {formatPrice(
+                                                                            Number(service.price),
+                                                                        )}
+                                                                        /
+                                                                        {serviceUnits[service.unit]}
+                                                                    </option>
+                                                                ))}
                                                             </select>
                                                         </label>
                                                     </>
@@ -625,7 +695,12 @@ export function ProjectEstimate({
                                                 <Button
                                                     type="submit"
                                                     variant="brand"
-                                                    disabled={disabled || preview === null}
+                                                    disabled={
+                                                        disabled ||
+                                                        catalogueLoading ||
+                                                        preview === null ||
+                                                        (!editing && !selectedService)
+                                                    }
                                                 >
                                                     {busy ? 'Зберігаємо…' : 'Зберегти роботу'}
                                                 </Button>
@@ -674,14 +749,6 @@ export function ProjectEstimate({
                                                     'Усі зміни зберігаються в історії.'}
                                             </p>
                                         </div>
-                                        <button
-                                            className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[#f1f1f8]"
-                                            aria-label="Закрити дію"
-                                            disabled={disabled}
-                                            onClick={() => setAction(null)}
-                                        >
-                                            <X size={18} />
-                                        </button>
                                     </div>
                                     <form onSubmit={saveAction}>
                                         <fieldset
