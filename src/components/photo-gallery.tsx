@@ -1,14 +1,20 @@
 ﻿'use client';
 import { useEffect, useState } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
+import { Menu } from '@base-ui/react/menu';
+import { MoreVertical, Trash2 } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 export type GalleryPhoto = { path: string; caption?: string };
 export function PhotoGallery({
     bucket,
     photos,
+    onDelete,
+    busy = false,
 }: {
     bucket: 'reports' | 'portfolio';
     photos: GalleryPhoto[];
+    onDelete?: (photo: GalleryPhoto) => void;
+    busy?: boolean;
 }) {
     const [urls, setUrls] = useState<Record<string, string>>({}),
         [error, setError] = useState(''),
@@ -58,27 +64,68 @@ export function PhotoGallery({
             )}
             <div className={list ? 'grid gap-4' : 'grid grid-cols-2 gap-3 sm:grid-cols-3'}>
                 {photos.map((photo, index) => (
-                    <button
-                        type="button"
-                        key={photo.path}
-                        onClick={() => setActive(index)}
-                        className="overflow-hidden rounded-xl border border-line bg-white text-left"
-                        aria-label={`Відкрити фото ${index + 1}`}
-                    >
-                        <img
-                            src={urls[photo.path] || undefined}
-                            alt={photo.caption || `Фото роботи ${index + 1}`}
-                            loading="lazy"
-                            className={
-                                list
-                                    ? 'max-h-[65svh] w-full object-contain'
-                                    : 'aspect-square w-full object-cover'
-                            }
-                        />
-                        {photo.caption && (
-                            <span className="block p-3 text-xs wrap-anywhere">{photo.caption}</span>
+                    <div key={photo.path} className="relative min-w-0">
+                        <button
+                            type="button"
+                            key={photo.path}
+                            onClick={() => setActive(index)}
+                            className="w-full overflow-hidden rounded-xl border border-line bg-white text-left"
+                            aria-label={`Відкрити фото ${index + 1}`}
+                        >
+                            {urls[photo.path] ? (
+                                <img
+                                    src={urls[photo.path] || undefined}
+                                    alt={photo.caption || `Фото роботи ${index + 1}`}
+                                    loading="lazy"
+                                    onError={() =>
+                                        setError(
+                                            'Не вдалося завантажити фото. Натисніть «Оновити фото».',
+                                        )
+                                    }
+                                    className={
+                                        list
+                                            ? 'max-h-[65svh] w-full object-contain'
+                                            : 'aspect-square w-full object-cover'
+                                    }
+                                />
+                            ) : (
+                                <div
+                                    role="status"
+                                    aria-label="Завантажуємо фото"
+                                    className="aspect-square w-full bg-[#eeedf5] motion-safe:animate-pulse"
+                                />
+                            )}
+                            {photo.caption && (
+                                <span className="block p-3 text-xs wrap-anywhere">
+                                    {photo.caption}
+                                </span>
+                            )}
+                        </button>
+                        {onDelete && (
+                            <Menu.Root>
+                                <Menu.Trigger
+                                    disabled={busy}
+                                    aria-label={`Дії з фото ${index + 1}`}
+                                    className="absolute top-2 right-2 flex size-10 items-center justify-center rounded-full bg-white/95 text-ink shadow-sm"
+                                >
+                                    <MoreVertical size={20} />
+                                </Menu.Trigger>
+                                <Menu.Portal>
+                                    <Menu.Positioner align="end" sideOffset={4} className="z-[110]">
+                                        <Menu.Popup className="min-w-40 rounded-xl border border-line bg-white p-1.5 shadow-lg">
+                                            <Menu.Item
+                                                onClick={() => onDelete(photo)}
+                                                className="flex cursor-pointer items-center gap-2 rounded-lg p-3 text-sm text-red-700 outline-none data-highlighted:bg-red-50"
+                                            >
+                                                <Trash2 size={17} />
+                                                Видалити
+                                            </Menu.Item>
+                                        </Menu.Popup>
+                                    </Menu.Positioner>
+                                </Menu.Portal>
+                            </Menu.Root>
                         )}
-                    </button>
+                    </div>
                 ))}
             </div>
             <Dialog.Root
@@ -102,6 +149,20 @@ export function PhotoGallery({
                         <Dialog.Close className="absolute top-2 right-2 rounded-lg bg-white px-4 py-3 text-black">
                             Закрити
                         </Dialog.Close>
+                        {onDelete && active !== null && photos[active] && (
+                            <button
+                                disabled={busy}
+                                aria-label="Видалити це фото"
+                                className="absolute top-2 left-2 flex size-12 items-center justify-center rounded-xl bg-white/15 text-white hover:bg-red-600"
+                                onClick={() => {
+                                    const photo = photos[active];
+                                    setActive(null);
+                                    onDelete(photo);
+                                }}
+                            >
+                                <Trash2 size={21} />
+                            </button>
+                        )}
                         {active !== null && (
                             <img
                                 className="max-h-[78svh] w-full object-contain"

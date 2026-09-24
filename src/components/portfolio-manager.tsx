@@ -3,6 +3,10 @@ import { useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { PhotoGallery } from '@/components/photo-gallery';
 import { ShareLink } from '@/components/share-link';
+import { ConfirmDialog } from '@/components/action-modal';
+import { BusyIndicator } from '@/components/feedback';
+import { OverviewVideo } from '@/components/overview-video';
+import { Trash2 } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { uploadPhotos } from '@/lib/photos';
 import { inputClass, panelClass, message } from '@/lib/workspace';
@@ -13,6 +17,8 @@ type Album = {
     category_ids: string[];
     share_token: string;
     published: boolean;
+    overview_video_path?: string | null;
+    overview_video_at?: string | null;
 };
 type Photo = { id: string; album_id: string; path: string; caption: string };
 export function PortfolioManager({
@@ -38,7 +44,10 @@ export function PortfolioManager({
         [selected, setSelected] = useState<string[]>([]),
         [category, setCategory] = useState(''),
         [sharing, setSharing] = useState(isPublic),
-        [token, setToken] = useState(publicToken);
+        [token, setToken] = useState(publicToken),
+        [deleting, setDeleting] = useState<{ album: Album; photo?: Photo; all?: boolean } | null>(
+            null,
+        );
     async function reload() {
         const c = createSupabaseBrowserClient();
         if (!c) return;
@@ -136,21 +145,25 @@ export function PortfolioManager({
             setBusy(false);
         }
     }
-    async function remove(album: Album, photo?: Photo) {
-        if (
-            !confirm(photo ? 'Видалити це фото?' : `Видалити альбом «${album.title}» та його фото?`)
-        )
-            return;
+    async function remove(album: Album, photo?: Photo, all = false) {
         setBusy(true);
         setError('');
         try {
             const paths = photo
                 ? [photo.path]
                 : photos.filter((p) => p.album_id === album.id).map((p) => p.path);
-            await mutate(photo ? 'remove_photo' : 'delete', { id: album.id, photo_id: photo?.id });
+            await mutate(photo ? 'remove_photo' : all ? 'remove_all_photos' : 'delete', {
+                id: album.id,
+                photo_id: photo?.id,
+            });
             if (paths.length)
                 await createSupabaseBrowserClient()?.storage.from('portfolio').remove(paths);
             await reload();
+            if (!photo && !all && album.overview_video_path)
+                await createSupabaseBrowserClient()
+                    ?.storage.from('overview-video')
+                    .remove([album.overview_video_path]);
+            setDeleting(null);
         } catch (e) {
             setError(message(e));
         } finally {
@@ -159,6 +172,27 @@ export function PortfolioManager({
     }
     return (
         <>
+            <BusyIndicator busy={busy} label="Оновлюємо портфоліо…" />
+            {deleting && (
+                <ConfirmDialog
+                    title={
+                        deleting.photo
+                            ? 'Видалити фото?'
+                            : deleting.all
+                              ? 'Видалити всі фото альбому?'
+                              : `Видалити альбом «${deleting.album.title}»?`
+                    }
+                    description={
+                        deleting.all
+                            ? 'Усі фото цього альбому буде видалено. Альбом і оглядове відео залишаться.'
+                            : 'Видалення неможливо скасувати. Збережіть оригінали, якщо вони вам потрібні.'
+                    }
+                    busy={busy}
+                    error={error}
+                    onClose={() => setDeleting(null)}
+                    onConfirm={() => void remove(deleting.album, deleting.photo, deleting.all)}
+                />
+            )}
             <h1 className="text-3xl font-semibold">Портфоліо</h1>
             <p className="text-subtle">
                 Створюйте альбоми й публікуйте лише ті, якими хочете ділитися. Фото оптимізуються до
@@ -172,7 +206,8 @@ export function PortfolioManager({
             <section className={panelClass}>
                 <h2 className="text-lg font-semibold">Посилання на все портфоліо</h2>
                 <p className="my-3 text-xs text-subtle">
-                    За ним видно тільки опубліковані альбоми. Вимкнення змінить адресу посилання.
+                    За ним видно тільки опубліковані альбоми. Після приховування й повторної
+                    публікації адреса залишається тією самою.
                 </p>
                 <Button disabled={busy} variant="outline" onClick={() => void all()}>
                     {sharing ? 'Вимкнути публічне портфоліо' : 'Увімкнути публічне портфоліо'}
@@ -276,7 +311,7 @@ export function PortfolioManager({
                             <Button
                                 disabled={busy}
                                 variant="ghost"
-                                onClick={() => void remove(album)}
+                                onClick={() => setDeleting({ album })}
                             >
                                 Видалити
                             </Button>
@@ -302,28 +337,39 @@ export function PortfolioManager({
                     <PhotoGallery
                         bucket="portfolio"
                         photos={photos.filter((p) => p.album_id === album.id)}
+                        busy={busy}
+                        onDelete={(photo) =>
+                            setDeleting({
+                                album,
+                                photo: photos.find((p) => p.path === photo.path)!,
+                            })
+                        }
                     />
-                    <div className="mt-3 flex flex-wrap gap-3">
-                        {photos
-                            .filter((p) => p.album_id === album.id)
-                            .map((p, index) => (
-                                <button
-                                    disabled={busy}
-                                    key={p.id}
-                                    className="text-xs text-red-700"
-                                    onClick={() => void remove(album, p)}
-                                >
-                                    Видалити фото {index + 1}
-                                </button>
-                            ))}
-                    </div>
+                    {photos.some((p) => p.album_id === album.id) && (
+                        <button
+                            disabled={busy}
+                            onClick={() => setDeleting({ album, all: true })}
+                            className="mt-4 flex items-center gap-2 text-xs text-red-700"
+                        >
+                            <Trash2 size={16} />
+                            Видалити всі фото
+                        </button>
+                    )}
+                    <OverviewVideo
+                        path={album.overview_video_path}
+                        addedAt={album.overview_video_at}
+                        owner
+                        userId={userId}
+                        albumId={album.id}
+                        onChanged={() => void reload().catch((e) => setError(message(e)))}
+                    />
                     <form
                         onSubmit={(e) => void upload(e, album)}
                         className="mt-5 border-t border-line pt-5"
                     >
                         <fieldset disabled={busy} className="grid gap-3 sm:grid-cols-2">
                             <label>
-                                Фото (JPG / PNG / WebP, до 20 МБ кожне)
+                                Фото (JPG / PNG / WebP, до 10 МБ кожне)
                                 <input
                                     name="photos"
                                     type="file"
@@ -332,6 +378,10 @@ export function PortfolioManager({
                                     required
                                     className={inputClass}
                                 />
+                                <span className="mt-2 block text-xs text-subtle">
+                                    Перед завантаженням фото стискається до 2048 px; у сховище
+                                    потрапляє оптимізована копія.
+                                </span>
                             </label>
                             <label>
                                 Підпис

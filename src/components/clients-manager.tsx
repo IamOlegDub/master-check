@@ -3,6 +3,8 @@ import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ShareLink } from '@/components/share-link';
+import { projectHref } from '@/lib/project-url';
+import { BusyIndicator } from '@/components/feedback';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { inputClass, panelClass, message, type Contact } from '@/lib/workspace';
 export function ClientsManager({
@@ -12,7 +14,13 @@ export function ClientsManager({
     portfolioToken,
 }: {
     initial: Contact[];
-    projects: { id: string; name: string; client_id: string | null }[];
+    projects: {
+        id: string;
+        name: string;
+        client_id: string | null;
+        slug?: string;
+        owner_username?: string | null;
+    }[];
     userId: string;
     portfolioToken?: string;
 }) {
@@ -85,6 +93,7 @@ export function ClientsManager({
     }
     return (
         <>
+            <BusyIndicator busy={busy} />
             <h1 className="text-3xl font-semibold">Клієнти</h1>
             {error && (
                 <p role="alert" className="rounded-xl bg-red-50 p-4 text-red-700">
@@ -167,7 +176,7 @@ export function ClientsManager({
                                     .map((p) => (
                                         <Link
                                             key={p.id}
-                                            href={`/projects/${p.id}`}
+                                            href={projectHref(p)}
                                             className="text-brand underline"
                                         >
                                             {p.name} · кошторис і запрошення
@@ -196,7 +205,7 @@ export function ClientsManager({
                                             onClick={() =>
                                                 setShare({
                                                     clientId: c.id,
-                                                    url: `${location.origin}/projects/${p.id}`,
+                                                    url: `${location.origin}${projectHref(p)}`,
                                                     title: `Кошторис: ${p.name}`,
                                                 })
                                             }

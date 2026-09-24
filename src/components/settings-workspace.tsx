@@ -9,10 +9,12 @@ export function SettingsWorkspace({
     initial,
     role,
     userId,
+    username,
 }: {
     initial: Profile;
     role: Role;
     userId: string;
+    username?: string | null;
 }) {
     const [profile, setProfile] = useState(initial);
     return (
@@ -23,6 +25,16 @@ export function SettingsWorkspace({
             title="Налаштування"
         >
             <ProfileSettings profile={profile} userId={userId} onSaved={setProfile} />
+            {username && (
+                <section className="mt-6 rounded-2xl border border-line bg-white p-5">
+                    <h2 className="font-semibold">Адреса майстра</h2>
+                    <p className="mt-2 text-brand">@{username}</p>
+                    <p className="mt-2 text-xs text-subtle">
+                        Username є частиною адрес проєктів і залишається незмінним, щоб надіслані
+                        посилання працювали.
+                    </p>
+                </section>
+            )}
             <InstallApp />
         </WorkspaceShell>
     );

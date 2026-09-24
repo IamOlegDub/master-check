@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { formatPrice } from '@/lib/price-list';
+import { projectHref, projectSlug } from '@/lib/project-url';
+import { BusyIndicator } from '@/components/feedback';
 import {
     statusLabels,
     inputClass,
@@ -21,19 +23,22 @@ export function WorkspaceHome({
     userId,
     role,
     overview = false,
+    username,
 }: {
     projects: WorkspaceProject[];
     contacts: Contact[];
     userId: string;
     role: Role;
     overview?: boolean;
+    username?: string | null;
 }) {
     const router = useRouter();
     const [query, setQuery] = useState(''),
         [status, setStatus] = useState(''),
         [form, setForm] = useState(false),
         [busy, setBusy] = useState(false),
-        [error, setError] = useState('');
+        [error, setError] = useState(''),
+        [name, setName] = useState('');
     async function create(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
         if (busy) return;
@@ -53,10 +58,14 @@ export function WorkspaceHome({
                     client_id: contact?.id ?? null,
                     status: 'DRAFT',
                 })
-                .select('id')
+                .select('id,slug')
                 .single();
+            if (result.error?.code === '23505')
+                throw Error(
+                    'Проєкт із такою назвою або адресою вже існує. Уточніть назву об’єкта.',
+                );
             if (result.error) throw result.error;
-            router.push(`/projects/${result.data.id}`);
+            router.push(projectHref({ ...result.data, owner_username: username }));
         } catch (e) {
             setError(message(e));
         } finally {
@@ -64,8 +73,17 @@ export function WorkspaceHome({
         }
     }
     const confirmed = projects.reduce((s, p) => s + Number(p.confirmed_total), 0),
-        paid = projects.reduce((s, p) => s + Number(p.paid), 0),
+        outstanding = projects.reduce(
+            (s, p) => s + Math.max(0, Number(p.confirmed_total) - Number(p.paid)),
+            0,
+        ),
+        credit = projects.reduce(
+            (s, p) => s + Math.max(0, Number(p.paid) - Number(p.confirmed_total)),
+            0,
+        ),
         advances = projects.reduce((s, p) => s + Number(p.advance_total), 0);
+    const slug = projectSlug(name),
+        duplicate = projects.some((p) => p.slug === slug);
     return (
         <>
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -92,7 +110,7 @@ export function WorkspaceHome({
                         {[
                             ['Підтверджено робіт', confirmed],
                             ['Отримано авансів', advances],
-                            ['Поточний баланс', confirmed - paid],
+                            ['До сплати за виконане', outstanding],
                         ].map(([label, value]) => (
                             <div key={String(label)} className={panelClass}>
                                 <p className="text-xs text-subtle">{label}</p>
@@ -103,8 +121,9 @@ export function WorkspaceHome({
                         ))}
                     </section>
                     <p className="text-xs text-subtle">
-                        Баланс: підтверджені роботи мінус усі оплати. Додатний — до сплати майстру;
-                        від’ємний — кошти замовника в рахунок майбутніх робіт.
+                        Залишок до сплати враховує підтверджені роботи. Кошти замовників у рахунок
+                        майбутніх робіт: {formatPrice(credit)}. Аванс одного проєкту не зменшує борг
+                        іншого.
                     </p>
                     {role === 'MASTER' && (
                         <div className="flex flex-wrap gap-3">
@@ -129,6 +148,7 @@ export function WorkspaceHome({
                     {error}
                 </p>
             )}
+            <BusyIndicator busy={busy} label="Створюємо проєкт…" />
             {form && role === 'MASTER' && (
                 <form onSubmit={create} className={panelClass}>
                     <fieldset disabled={busy} className="grid gap-4 sm:grid-cols-2">
@@ -137,10 +157,20 @@ export function WorkspaceHome({
                             <input
                                 className={inputClass}
                                 name="name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
                                 required
                                 maxLength={160}
                                 placeholder="вул. Мазепи, 21"
                             />
+                            <span className="mt-2 block text-xs text-subtle wrap-anywhere">
+                                /{username || 'username'}/{projectSlug(name) || 'nazva-proiektu'}
+                            </span>
+                            {duplicate && (
+                                <span role="status" className="mt-2 block text-xs text-red-700">
+                                    Проєкт із такою адресою вже є. Уточніть назву.
+                                </span>
+                            )}
                         </label>
                         <label>
                             Клієнт
@@ -153,7 +183,7 @@ export function WorkspaceHome({
                                 ))}
                             </select>
                         </label>
-                        <Button type="submit" variant="brand" disabled={busy}>
+                        <Button type="submit" variant="brand" disabled={busy || !slug || duplicate}>
                             {busy ? 'Створюємо…' : 'Створити чернетку'}
                         </Button>
                     </fieldset>
@@ -193,7 +223,7 @@ export function WorkspaceHome({
                     .map((p) => (
                         <Link
                             key={p.id}
-                            href={`/projects/${p.id}`}
+                            href={projectHref(p)}
                             className={`${panelClass} block transition hover:border-brand`}
                         >
                             <span className="rounded-lg bg-[#efedfc] px-2 py-1 text-xs text-brand">

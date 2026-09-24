@@ -16,6 +16,7 @@ export default async function Projects() {
                 projects={data ?? []}
                 contacts={contacts.data ?? []}
                 role={c.role}
+                username={c.username}
                 userId={c.user.id}
             />
         </WorkspaceShell>

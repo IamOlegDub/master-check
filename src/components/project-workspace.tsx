@@ -5,6 +5,10 @@ import { Button } from '@/components/ui/button';
 import { ProjectEstimate } from '@/components/project-estimate';
 import { PhotoGallery } from '@/components/photo-gallery';
 import { ShareLink } from '@/components/share-link';
+import { ActionModal } from '@/components/action-modal';
+import { BusyIndicator } from '@/components/feedback';
+import { OverviewVideo } from '@/components/overview-video';
+import { PhotoSelection } from '@/components/photo-selection';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { uploadPhotos } from '@/lib/photos';
 import { formatPrice, serviceUnits } from '@/lib/price-list';
@@ -65,7 +69,16 @@ export function ProjectWorkspace({
         [reason, setReason] = useState(''),
         [files, setFiles] = useState<File[]>([]),
         [showReport, setShowReport] = useState(false),
-        [reportTab, setReportTab] = useState('SUBMITTED');
+        [reportTab, setReportTab] = useState('SUBMITTED'),
+        [tab, setTab] = useState<'estimate' | 'work' | 'payments' | 'access'>(
+            initial.project.status === 'DRAFT'
+                ? 'estimate'
+                : initial.project.status === 'PENDING_APPROVAL'
+                  ? 'access'
+                  : 'work',
+        ),
+        [reportItem, setReportItem] = useState(''),
+        [reportQuantity, setReportQuantity] = useState('');
     const lock = useRef(false);
     const uploading = useRef(false);
     const reportId = useRef('');
@@ -191,6 +204,7 @@ export function ProjectWorkspace({
     const reports = data.reports.filter((r) => r.status === reportTab);
     return (
         <>
+            <BusyIndicator busy={busy} label="Оновлюємо проєкт…" />
             <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                     <span className="rounded-lg bg-[#efedfc] px-3 py-1 text-xs text-brand">
@@ -245,7 +259,32 @@ export function ProjectWorkspace({
                 Залишок за всім планом: {formatPrice(Math.max(0, Number(p.total) - Number(p.paid)))}
                 .
             </p>
-            <section className={panelClass}>
+            <nav
+                aria-label="Розділи проєкту"
+                className="sticky top-2 z-30 grid grid-cols-4 gap-1 rounded-2xl border border-line bg-white p-1.5 shadow-sm"
+            >
+                {(
+                    [
+                        ['estimate', 'Кошторис'],
+                        ['work', 'Виконання'],
+                        ['payments', 'Оплати'],
+                        ['access', 'Доступ'],
+                    ] as const
+                ).map(([value, label]) => (
+                    <button
+                        key={value}
+                        aria-current={tab === value ? 'page' : undefined}
+                        onClick={() => setTab(value)}
+                        className="min-h-12 rounded-xl px-1 text-xs font-medium text-subtle transition hover:bg-[#f5f3fc] aria-[current=page]:bg-brand aria-[current=page]:text-white sm:text-sm"
+                    >
+                        {label}
+                        {value === 'work' && data.pending_count > 0
+                            ? ` (${data.pending_count})`
+                            : ''}
+                    </button>
+                ))}
+            </nav>
+            <section hidden={tab !== 'access'} className={panelClass}>
                 <h2 className="text-lg font-semibold">Погодження та доступ</h2>
                 {owner && (
                     <>
@@ -366,14 +405,18 @@ export function ProjectWorkspace({
                     </p>
                 ))}
             </section>
-            <section className={panelClass}>
+            <section hidden={tab !== 'work'} className={panelClass}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <h2 className="text-xl font-semibold">Виконані обсяги та фотозвіти</h2>
-                    {owner && p.status === 'IN_PROGRESS' && (
+                    {owner && (
                         <Button
                             variant="brand"
-                            disabled={busy}
-                            onClick={() => setShowReport(!showReport)}
+                            disabled={busy || p.status !== 'IN_PROGRESS'}
+                            onClick={() => {
+                                setReportItem(data.items[0]?.id ?? '');
+                                setReportQuantity('');
+                                setShowReport(true);
+                            }}
                         >
                             Новий звіт
                         </Button>
@@ -383,6 +426,16 @@ export function ProjectWorkspace({
                     Підтвердження стосується обсягу звіту. Робота завершується після підтвердження
                     всього плану.
                 </p>
+                {owner && p.status !== 'IN_PROGRESS' && (
+                    <p className="mt-4 rounded-xl bg-amber-50 p-4 text-sm">
+                        {p.status === 'COMPLETED'
+                            ? 'Проєкт завершений. Для нових робіт відкрийте нову редакцію кошторису.'
+                            : 'Щоб зафіксувати виконання й додати фотозвіт, потрібне погодження кошторису замовником.'}{' '}
+                        <button className="text-brand underline" onClick={() => setTab('access')}>
+                            Перейти до погодження
+                        </button>
+                    </p>
+                )}
                 {owner &&
                     data.items.map((i) => {
                         const done = data.reports
@@ -401,62 +454,119 @@ export function ProjectWorkspace({
                                     max={Number(i.quantity)}
                                     value={done}
                                 />
+                                {p.status === 'IN_PROGRESS' && (
+                                    <button
+                                        disabled={busy}
+                                        className="mt-2 rounded-lg border border-line px-3 py-2 text-brand"
+                                        onClick={() => {
+                                            setReportItem(i.id);
+                                            setReportQuantity(
+                                                String(
+                                                    Math.max(
+                                                        0,
+                                                        Number(i.quantity) -
+                                                            data.reports
+                                                                .filter(
+                                                                    (r) =>
+                                                                        r.item_id === i.id &&
+                                                                        r.status !==
+                                                                            'CHANGES_REQUESTED',
+                                                                )
+                                                                .reduce(
+                                                                    (sum, r) =>
+                                                                        sum + Number(r.quantity),
+                                                                    0,
+                                                                ),
+                                                    ),
+                                                ),
+                                            );
+                                            setShowReport(true);
+                                        }}
+                                    >
+                                        Зафіксувати виконання / фото
+                                    </button>
+                                )}
                             </div>
                         );
                     })}
                 {showReport && (
-                    <form onSubmit={submitReport} className="mt-5 border-t border-line pt-5">
-                        <fieldset disabled={busy} className="grid gap-4 sm:grid-cols-2">
-                            <label>
-                                Робота
-                                <select required name="item_id" className={inputClass}>
-                                    {data.items.map((i) => (
-                                        <option key={i.id} value={i.id}>
-                                            {i.name} · план {i.quantity} {serviceUnits[i.unit]}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
-                            <label>
-                                Виконаний обсяг
-                                <input
-                                    required
-                                    name="quantity"
-                                    type="number"
-                                    min="0.001"
-                                    step="0.001"
-                                    className={inputClass}
+                    <ActionModal
+                        title="Виконані роботи та фотозвіт"
+                        busy={busy}
+                        onClose={() => setShowReport(false)}
+                        error={error}
+                    >
+                        <form onSubmit={submitReport} className="mt-5 border-t border-line pt-5">
+                            <fieldset disabled={busy} className="grid gap-4 sm:grid-cols-2">
+                                <label>
+                                    Робота
+                                    <select
+                                        required
+                                        name="item_id"
+                                        className={inputClass}
+                                        value={reportItem}
+                                        onChange={(e) => {
+                                            setReportItem(e.target.value);
+                                            setReportQuantity('');
+                                        }}
+                                    >
+                                        {data.items.map((i) => (
+                                            <option key={i.id} value={i.id}>
+                                                {i.name} · план {i.quantity} {serviceUnits[i.unit]}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+                                <label>
+                                    Виконаний обсяг
+                                    <input
+                                        required
+                                        name="quantity"
+                                        value={reportQuantity}
+                                        onChange={(e) => setReportQuantity(e.target.value)}
+                                        type="number"
+                                        min="0.001"
+                                        step="0.001"
+                                        className={inputClass}
+                                    />
+                                </label>
+                                <label>
+                                    Дата й час виконання
+                                    <input
+                                        required
+                                        name="date"
+                                        type="datetime-local"
+                                        defaultValue={localDateTime()}
+                                        className={inputClass}
+                                    />
+                                </label>
+                                <label>
+                                    Фото (до 10 файлів, до 10 МБ кожне)
+                                    <input
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp"
+                                        multiple
+                                        className={inputClass}
+                                        onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
+                                    />
+                                </label>
+                                <PhotoSelection
+                                    files={files}
+                                    disabled={busy}
+                                    onRemove={(index) =>
+                                        setFiles((current) => current.filter((_, i) => i !== index))
+                                    }
                                 />
-                            </label>
-                            <label>
-                                Дата й час виконання
-                                <input
-                                    required
-                                    name="date"
-                                    type="datetime-local"
-                                    defaultValue={localDateTime()}
-                                    className={inputClass}
-                                />
-                            </label>
-                            <label>
-                                Фото (до 10)
-                                <input
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/webp"
-                                    multiple
-                                    className={inputClass}
-                                    onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
-                                />
-                            </label>
-                            <label className="sm:col-span-2">
-                                Коментар
-                                <textarea name="note" maxLength={2000} className={inputClass} />
-                            </label>
-                            <Button type="submit" variant="brand">
-                                {busy ? 'Надсилаємо…' : 'Надіслати звіт на перевірку'}
-                            </Button>
-                        </fieldset>
-                    </form>
+                                <label className="sm:col-span-2">
+                                    Коментар
+                                    <textarea name="note" maxLength={2000} className={inputClass} />
+                                </label>
+                                <Button type="submit" variant="brand">
+                                    {busy ? 'Надсилаємо…' : 'Надіслати звіт на перевірку'}
+                                </Button>
+                            </fieldset>
+                        </form>
+                    </ActionModal>
                 )}
                 <div className="my-5 flex flex-wrap gap-2">
                     {[
@@ -540,7 +650,7 @@ export function ProjectWorkspace({
                     </article>
                 ))}
             </section>
-            {owner ? (
+            {owner && (tab === 'estimate' || tab === 'payments') ? (
                 <ProjectEstimate
                     key={p.status}
                     projectId={projectId}
@@ -549,10 +659,11 @@ export function ProjectWorkspace({
                     openPriceList={() => router.push('/services')}
                     workflowMode
                     estimateLocked={p.status !== 'DRAFT'}
+                    view={tab}
                 />
-            ) : (
+            ) : !owner ? (
                 <>
-                    <section className={panelClass}>
+                    <section hidden={tab !== 'estimate'} className={panelClass}>
                         <h2 className="text-xl font-semibold">Кошторис</h2>
                         {data.items.map((i) => {
                             const done = data.reports
@@ -581,7 +692,7 @@ export function ProjectWorkspace({
                             );
                         })}
                     </section>
-                    <section className={panelClass}>
+                    <section hidden={tab !== 'payments'} className={panelClass}>
                         <h2 className="text-xl font-semibold">Оплати та аванси</h2>
                         {data.payments.map((r) => (
                             <div key={r.id} className="mt-4 border-t border-line pt-4">
@@ -606,6 +717,16 @@ export function ProjectWorkspace({
                         )}
                     </section>
                 </>
+            ) : null}
+            {tab === 'work' && (
+                <OverviewVideo
+                    path={p.overview_video_path}
+                    addedAt={p.overview_video_at}
+                    owner={owner}
+                    userId={userId}
+                    projectId={projectId}
+                    onChanged={changed}
+                />
             )}
         </>
     );

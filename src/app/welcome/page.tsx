@@ -10,10 +10,10 @@ export default async function Welcome() {
     if (!user) redirect('/login');
     const { data, error } = await c
         .from('accounts')
-        .select('role')
+        .select('role,username')
         .eq('user_id', user.id)
         .maybeSingle();
     if (error) throw error;
-    if (data) redirect('/');
-    return <RoleChoice />;
+    if (data && (data.role === 'CLIENT' || data.username)) redirect('/');
+    return <RoleChoice existingMaster={data?.role === 'MASTER'} />;
 }

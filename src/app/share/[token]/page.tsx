@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { validId, panelClass } from '@/lib/workspace';
 import { PhotoGallery } from '@/components/photo-gallery';
+import { OverviewVideo } from '@/components/overview-video';
 export const dynamic = 'force-dynamic';
 type PublicAlbum = {
     id: string;
@@ -9,6 +10,8 @@ type PublicAlbum = {
     description: string;
     categories: string[];
     photos: { id: string; path: string; caption: string }[];
+    overview_video_path?: string | null;
+    overview_video_at?: string | null;
 };
 export default async function Shared({ params }: { params: Promise<{ token: string }> }) {
     const { token } = await params;
@@ -34,6 +37,7 @@ export default async function Shared({ params }: { params: Promise<{ token: stri
                             {a.description}
                         </p>
                         <PhotoGallery bucket="portfolio" photos={a.photos} />
+                        <OverviewVideo path={a.overview_video_path} addedAt={a.overview_video_at} />
                     </article>
                 ))}
             </div>

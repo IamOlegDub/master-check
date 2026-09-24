@@ -2,9 +2,9 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 export async function optimizePhoto(file: File) {
     if (
         !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) ||
-        file.size > 20 * 1024 * 1024
+        file.size > 10 * 1024 * 1024
     )
-        throw Error('Оберіть JPG, PNG або WebP до 20 МБ.');
+        throw Error('Оберіть JPG, PNG або WebP до 10 МБ.');
     const url = URL.createObjectURL(file);
     try {
         const image = new Image();

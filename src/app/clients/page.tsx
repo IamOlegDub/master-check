@@ -5,7 +5,7 @@ export default async function Clients() {
     const c = await workspaceContext(true);
     const [contacts, projects, account] = await Promise.all([
         c.supabase.from('clients').select('*').order('name'),
-        c.supabase.from('projects').select('id,name,client_id'),
+        c.supabase.from('projects').select('id,name,client_id,slug'),
         c.supabase
             .from('accounts')
             .select('portfolio_token,portfolio_public')
@@ -18,7 +18,7 @@ export default async function Clients() {
         <WorkspaceShell role={c.role} name={c.name} avatar={c.profile.avatarUrl} title="Клієнти">
             <ClientsManager
                 initial={contacts.data}
-                projects={projects.data}
+                projects={projects.data.map((p) => ({ ...p, owner_username: c.username }))}
                 userId={c.user.id}
                 portfolioToken={
                     account.data.portfolio_public ? account.data.portfolio_token : undefined

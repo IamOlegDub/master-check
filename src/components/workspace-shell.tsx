@@ -13,12 +13,14 @@ export function WorkspaceShell({
     name,
     avatar,
     title,
+    projectPage = false,
 }: {
     children: ReactNode;
     role: Role;
     name: string;
     avatar?: string;
     title: string;
+    projectPage?: boolean;
 }) {
     const path = usePathname();
     const [error, setError] = useState('');
@@ -60,7 +62,9 @@ export function WorkspaceShell({
                             key={href}
                             href={href}
                             aria-current={
-                                path === href || (href !== '/' && path.startsWith(href + '/'))
+                                path === href ||
+                                (href !== '/' && path.startsWith(href + '/')) ||
+                                (projectPage && href === '/projects')
                                     ? 'page'
                                     : undefined
                             }
@@ -88,7 +92,7 @@ export function WorkspaceShell({
                         {path !== '/' && (
                             <>
                                 <span aria-hidden>›</span>
-                                {path.startsWith('/projects/') && (
+                                {(projectPage || path.startsWith('/projects/')) && (
                                     <>
                                         <Link href="/projects" className="py-3 text-subtle">
                                             Проєкти
@@ -96,7 +100,7 @@ export function WorkspaceShell({
                                         <span aria-hidden>›</span>
                                     </>
                                 )}
-                                <span className="break-words" aria-current="page">
+                                <span className="max-w-full wrap-anywhere" aria-current="page">
                                     {title}
                                 </span>
                             </>
@@ -128,7 +132,9 @@ export function WorkspaceShell({
                         key={href}
                         href={href}
                         aria-current={
-                            path === href || (href !== '/' && path.startsWith(href + '/'))
+                            path === href ||
+                            (href !== '/' && path.startsWith(href + '/')) ||
+                            (projectPage && href === '/projects')
                                 ? 'page'
                                 : undefined
                         }

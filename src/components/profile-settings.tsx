@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Camera, Trash2 } from 'lucide-react';
+import { BusyIndicator } from '@/components/feedback';
 import { Avatar } from '@/components/account-menu';
 import { AvatarEditor } from '@/components/avatar-editor';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
@@ -184,6 +185,7 @@ export function ProfileSettings({
     }
     return (
         <section className="profile-settings grid grid-cols-1 items-start gap-5 min-[761px]:grid-cols-[minmax(220px,300px)_minmax(0,1fr)] min-[761px]:gap-6">
+            <BusyIndicator busy={busy} />
             <aside className="profile-photo-panel -mx-[18px] min-w-0 overflow-hidden rounded-none border border-t-0 border-line bg-white min-[761px]:mx-0 min-[761px]:rounded-2xl min-[761px]:border-t">
                 {avatar ? (
                     <img

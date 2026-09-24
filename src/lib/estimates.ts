@@ -124,6 +124,7 @@ export function estimateError(error: { code?: string; message?: string }) {
     return 'Не вдалося підтвердити збереження. Повторіть той самий запит або оновіть дані перед наступною дією.';
 }
 export const eventLabels: Record<string, string> = {
+    overview_video: 'Змінено оглядове відео',
     link_client: 'Змінено контакт замовника',
     request_approval: 'Кошторис надіслано на затвердження',
     approve: 'Замовник затвердив кошторис',

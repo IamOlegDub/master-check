@@ -2,7 +2,11 @@
 
 All application screens use Tailwind utilities in JSX. Edit the relevant component:
 
-- `src/components/dashboard.tsx`: sidebar, header, bottom navigation, project list and summary.
+- `src/components/workspace-shell.tsx`: sidebar, header, breadcrumbs and fixed bottom navigation.
+- `src/components/workspace-home.tsx`: project list and summary.
+- `src/components/project-workspace.tsx`: project tabs, approvals and work reports.
+- `src/components/action-modal.tsx`, `feedback.tsx`: dialogs, confirmations, request indicators and skeletons.
+- `src/components/photo-gallery.tsx`, `overview-video.tsx`, `portfolio-manager.tsx`: media and portfolio controls.
 - `src/components/price-list.tsx`: service catalogue, categories and PDF options.
 - `src/components/project-estimate.tsx`: estimate items, payments and history.
 - `src/components/login-screen.tsx`: Google sign-in screen.
@@ -14,7 +18,7 @@ All application screens use Tailwind utilities in JSX. Edit the relevant compone
 
 Theme colours are exposed as `text-ink`, `text-subtle`, `border-line`, `bg-brand`, etc. Change the corresponding custom properties in `:root` for an application-wide colour change.
 
-Responsive utilities preserve the existing layout: the sidebar starts at 1024px; smaller viewports use fixed bottom navigation. Service rows become cards below 761px. Safe-area padding is preserved for phones. The progress bar's inline width is a calculated payment percentage, not a static style.
+Responsive utilities preserve the existing layout: the sidebar starts at 1024px; smaller viewports use fixed bottom navigation. Service rows become cards below 761px. Safe-area padding is preserved for phones. Project completion uses native progress elements with Tailwind styling.
 
 Use `pnpm format` after editing and `pnpm format:check` to check formatting. Validate changes with `pnpm test` and `pnpm build`.
 

@@ -13,15 +13,23 @@ export async function workspaceContext(requireMaster = false) {
     if (!user) redirect('/login');
     const { data: account, error } = await supabase
         .from('accounts')
-        .select('role')
+        .select('role,username')
         .eq('user_id', user.id)
         .maybeSingle();
     if (error)
         throw new Error(
-            'Потрібно застосувати міграції робочого простору 202609230001 та 202609230002 у Supabase.',
+            'Потрібно застосувати міграції робочого простору 202609230001, 202609230002 та 202609240001 у Supabase.',
         );
     if (!account) redirect('/welcome');
+    if (account.role === 'MASTER' && !account.username) redirect('/welcome');
     if (requireMaster && account.role !== 'MASTER') redirect('/');
     const profile = profileFromUser(user);
-    return { supabase, user, profile, name: profileName(profile), role: account.role as Role };
+    return {
+        supabase,
+        user,
+        profile,
+        name: profileName(profile),
+        role: account.role as Role,
+        username: account.username as string | null,
+    };
 }

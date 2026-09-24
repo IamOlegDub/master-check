@@ -1,5 +1,7 @@
 'use client';
 
+import { ActionModal } from '@/components/action-modal';
+import { BusyIndicator } from '@/components/feedback';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { Check, Clock3, Pencil, Plus, RefreshCw, Trash2, Wallet, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -61,6 +63,7 @@ export function ProjectEstimate({
     openPriceList,
     workflowMode = false,
     estimateLocked = false,
+    view = 'estimate',
 }: {
     projectId: string;
     userId: string;
@@ -68,6 +71,7 @@ export function ProjectEstimate({
     openPriceList: () => void;
     workflowMode?: boolean;
     estimateLocked?: boolean;
+    view?: 'estimate' | 'payments';
 }) {
     const [detail, setDetail] = useState<ProjectDetail | null>(null);
     const [services, setServices] = useState<Service[]>([]);
@@ -271,11 +275,20 @@ export function ProjectEstimate({
         >
             <div className="panel-heading flex justify-between items-start gap-4 pt-[25px] px-6 pb-5 [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:tracking-[-.03em] [&_p]:text-subtle [&_p]:text-[11px] [&_p]:mt-[7px] max-[761px]:pt-[21px] max-[761px]:px-4.5 max-[761px]:pb-4.5 estimate-heading px-0! [&_h2]:text-[23px]! [&_h2]:mt-2! [&_h2]:wrap-anywhere!">
                 <div>
-                    <span className="eyebrow block text-[#89859e] text-[9px] font-semibold tracking-[.13em]">
-                        КОШТОРИС І ОПЛАТИ
+                    <span
+                        hidden={workflowMode}
+                        className="eyebrow block text-[#89859e] text-[9px] font-semibold tracking-[.13em]"
+                    >
+                        {view === 'payments' ? 'ОПЛАТИ ТА АВАНСИ' : 'ПЛАН РОБІТ'}
                     </span>
-                    <h2>{detail?.project.name ?? 'Завантажуємо проєкт…'}</h2>
-                    {detail && (
+                    <h2>
+                        {workflowMode
+                            ? view === 'payments'
+                                ? 'Оплати та аванси'
+                                : 'План робіт'
+                            : (detail?.project.name ?? 'Завантажуємо проєкт…')}
+                    </h2>
+                    {detail && !workflowMode && (
                         <p>
                             Створено {displayDate(detail.project.created_at)} · оновлено{' '}
                             {displayDate(detail.project.updated_at)}
@@ -296,6 +309,7 @@ export function ProjectEstimate({
                     Оновити
                 </Button>
             </div>
+            <BusyIndicator busy={busy} />
             {error && (
                 <div
                     role="alert"
@@ -323,31 +337,43 @@ export function ProjectEstimate({
                 </p>
             )}
             {loading ? (
-                <p role="status">Завантажуємо кошторис…</p>
+                <div role="status" className="grid gap-3 motion-safe:animate-pulse">
+                    <span className="sr-only">Завантажуємо кошторис…</span>
+                    <div className="h-24 rounded-2xl bg-[#eae8f3]" />
+                    <div className="h-48 rounded-2xl bg-[#eae8f3]" />
+                </div>
             ) : (
                 detail && (
                     <>
-                        <div className="estimate-summary grid grid-cols-4 gap-3 [&_>_div]:bg-[#fff] [&_>_div]:border [&_>_div]:border-line [&_>_div]:rounded-[12px] [&_>_div]:p-4.5 [&_>_div]:min-w-0 [&_span]:block [&_span]:text-[11px] [&_span]:text-subtle [&_strong]:block [&_strong]:text-[20px] [&_strong]:mt-2.5 [&_strong]:font-[550] [&_strong]:tabular-nums [&_strong]:wrap-anywhere max-[901px]:grid-cols-2 max-[601px]:[&_strong]:text-[17px]">
+                        <div
+                            hidden={view !== 'payments'}
+                            className="estimate-summary grid grid-cols-2 gap-3 [&_>_div]:bg-[#fff] [&_>_div]:border [&_>_div]:border-line [&_>_div]:rounded-[12px] [&_>_div]:p-4.5 [&_>_div]:min-w-0 [&_span]:block [&_span]:text-[11px] [&_span]:text-subtle [&_strong]:block [&_strong]:text-[20px] [&_strong]:mt-2.5 [&_strong]:font-[550] [&_strong]:tabular-nums [&_strong]:wrap-anywhere max-[901px]:grid-cols-2 max-[601px]:[&_strong]:text-[17px]"
+                        >
                             {[
                                 ['Кошторис', detail.project.total],
                                 ['Отримано від замовника', detail.project.paid],
                                 ['Залишок за планом', balance.remaining],
                                 ['Нерозподілений аванс', balance.unallocated],
-                            ].map(([label, value]) => (
-                                <div key={label}>
-                                    <span>{label}</span>
-                                    <strong>{formatPrice(Number(value))}</strong>
-                                </div>
-                            ))}
+                            ]
+                                .filter((_, index) => !workflowMode || index > 1)
+                                .map(([label, value]) => (
+                                    <div key={label}>
+                                        <span>{label}</span>
+                                        <strong>{formatPrice(Number(value))}</strong>
+                                    </div>
+                                ))}
                         </div>
-                        {balance.overpaid > 0 && (
+                        {view === 'payments' && balance.overpaid > 0 && (
                             <p className="workspace-notice rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[#34755c] bg-[#edf7f1] border border-[#d7eddf]">
                                 Кредит замовника: {formatPrice(balance.overpaid)}. Отримані кошти
                                 перевищують поточний кошторис; їх можна врахувати для наступних
                                 робіт.
                             </p>
                         )}
-                        <p className="estimate-help text-[12px] text-subtle leading-[1.8]">
+                        <p
+                            hidden={view !== 'payments'}
+                            className="estimate-help text-[12px] text-subtle leading-[1.8]"
+                        >
                             Аванс уже врахований у загальному залишку. Зарахуйте його на обрані
                             роботи, щоб позначити їх оплаченими — повторно додавати отримані гроші
                             не потрібно.
@@ -375,6 +401,7 @@ export function ProjectEstimate({
                                 <Button
                                     variant="outline"
                                     disabled={disabled}
+                                    hidden={view !== 'payments'}
                                     onClick={() => openAction({ kind: 'payment' })}
                                 >
                                     <Wallet size={17} />
@@ -383,6 +410,7 @@ export function ProjectEstimate({
                                 <Button
                                     variant="brand"
                                     disabled={disabled || estimateLocked}
+                                    hidden={view !== 'estimate'}
                                     onClick={() => openItem()}
                                 >
                                     <Plus size={17} />
@@ -399,349 +427,395 @@ export function ProjectEstimate({
                             </p>
                         )}
                         {itemForm && (
-                            <section className="workspace-panel bg-[#fff] border border-line rounded-[14px] min-w-0 project-form-panel border-[#ddd7f5]! shadow-[0_5px_20px_#6155db06] [&_.eyebrow]:mb-[7px] [&_.workspace-error]:mt-0 [&_.workspace-error]:mx-6 [&_.workspace-error]:mb-5">
-                                <div className="panel-heading flex justify-between items-start gap-4 pt-[25px] px-6 pb-5 [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:tracking-[-.03em] [&_p]:text-subtle [&_p]:text-[11px] [&_p]:mt-[7px] max-[761px]:pt-[21px] max-[761px]:px-4.5 max-[761px]:pb-4.5">
-                                    <div>
-                                        <h2>
-                                            {editing
-                                                ? `Редагувати: ${editing.name}`
-                                                : 'Додати роботу з прайсу'}
-                                        </h2>
-                                        <p>
-                                            Ціна зберігається в цьому проєкті. Подальша зміна прайсу
-                                            її не змінить.
-                                        </p>
-                                    </div>
-                                    <button
-                                        className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[#f1f1f8]"
-                                        aria-label="Закрити роботу"
-                                        disabled={disabled}
-                                        onClick={() => setItemForm(false)}
-                                    >
-                                        <X size={18} />
-                                    </button>
-                                </div>
-                                {!editing && !services.length ? (
-                                    <div className="category-help pt-0 px-6 pb-5 text-subtle text-[11px] leading-[1.7]">
-                                        <p>Спочатку додайте послуги та ціни у свій прайс.</p>
-                                        <Button
-                                            variant="outline"
-                                            className="mt-3"
-                                            onClick={openPriceList}
+                            <ActionModal
+                                title="Робота з прайсу"
+                                onClose={() => setItemForm(false)}
+                                busy={busy}
+                                error={error}
+                            >
+                                <section className="workspace-panel bg-[#fff] border border-line rounded-[14px] min-w-0 project-form-panel border-[#ddd7f5]! shadow-[0_5px_20px_#6155db06] [&_.eyebrow]:mb-[7px] [&_.workspace-error]:mt-0 [&_.workspace-error]:mx-6 [&_.workspace-error]:mb-5">
+                                    <div className="panel-heading flex justify-between items-start gap-4 pt-[25px] px-6 pb-5 [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:tracking-[-.03em] [&_p]:text-subtle [&_p]:text-[11px] [&_p]:mt-[7px] max-[761px]:pt-[21px] max-[761px]:px-4.5 max-[761px]:pb-4.5">
+                                        <div>
+                                            <h2>
+                                                {editing
+                                                    ? `Редагувати: ${editing.name}`
+                                                    : 'Додати роботу з прайсу'}
+                                            </h2>
+                                            <p>
+                                                Ціна зберігається в цьому проєкті. Подальша зміна
+                                                прайсу її не змінить.
+                                            </p>
+                                        </div>
+                                        <button
+                                            className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[#f1f1f8]"
+                                            aria-label="Закрити роботу"
+                                            disabled={disabled}
+                                            onClick={() => setItemForm(false)}
                                         >
-                                            Відкрити послуги та ціни
-                                        </Button>
+                                            <X size={18} />
+                                        </button>
                                     </div>
-                                ) : (
-                                    <form onSubmit={saveItem}>
+                                    {!editing && !services.length ? (
+                                        <div className="category-help pt-0 px-6 pb-5 text-subtle text-[11px] leading-[1.7]">
+                                            <p>Спочатку додайте послуги та ціни у свій прайс.</p>
+                                            <Button
+                                                variant="outline"
+                                                className="mt-3"
+                                                onClick={openPriceList}
+                                            >
+                                                Відкрити послуги та ціни
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <form onSubmit={saveItem}>
+                                            <fieldset
+                                                className="project-form-fields grid grid-cols-[1fr_1fr] gap-5 pt-1 px-6 pb-6 [&_label]:text-[#55596c] [&_label]:text-[12px] [&_label]:font-medium [&_label]:min-w-0 max-[761px]:grid-cols-[1fr] max-[761px]:px-4.5 max-[761px]:gap-[17px]"
+                                                disabled={disabled}
+                                            >
+                                                {!editing && (
+                                                    <>
+                                                        <label>
+                                                            Пошук у прайсі
+                                                            <input
+                                                                className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                                value={search}
+                                                                onChange={(event) =>
+                                                                    setSearch(event.target.value)
+                                                                }
+                                                                placeholder="Назва послуги"
+                                                            />
+                                                        </label>
+                                                        <label>
+                                                            Послуга
+                                                            <select
+                                                                className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                                required
+                                                                value={serviceId}
+                                                                onChange={(event) =>
+                                                                    setServiceId(event.target.value)
+                                                                }
+                                                            >
+                                                                <option value="">
+                                                                    Оберіть послугу
+                                                                </option>
+                                                                {services
+                                                                    .filter(
+                                                                        (service) =>
+                                                                            service.id ===
+                                                                                serviceId ||
+                                                                            service.name
+                                                                                .toLocaleLowerCase(
+                                                                                    'uk-UA',
+                                                                                )
+                                                                                .includes(
+                                                                                    search.toLocaleLowerCase(
+                                                                                        'uk-UA',
+                                                                                    ),
+                                                                                ),
+                                                                    )
+                                                                    .map((service) => (
+                                                                        <option
+                                                                            key={service.id}
+                                                                            value={service.id}
+                                                                        >
+                                                                            {service.name} ·{' '}
+                                                                            {formatPrice(
+                                                                                Number(
+                                                                                    service.price,
+                                                                                ),
+                                                                            )}
+                                                                            /
+                                                                            {
+                                                                                serviceUnits[
+                                                                                    service.unit
+                                                                                ]
+                                                                            }
+                                                                        </option>
+                                                                    ))}
+                                                            </select>
+                                                        </label>
+                                                    </>
+                                                )}
+                                                <label>
+                                                    Кількість{' '}
+                                                    {editing || selectedService
+                                                        ? `(${serviceUnits[(editing ?? selectedService)!.unit]})`
+                                                        : ''}
+                                                    <input
+                                                        className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                        type="number"
+                                                        min="0.001"
+                                                        max="999999999.999"
+                                                        step="0.001"
+                                                        value={quantity}
+                                                        onChange={(event) =>
+                                                            setQuantity(event.target.value)
+                                                        }
+                                                        required
+                                                    />
+                                                </label>
+                                                <label>
+                                                    Ціна за одиницю, ₴
+                                                    <input
+                                                        className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                        type="number"
+                                                        min="0"
+                                                        max="9999999999.99"
+                                                        step="0.01"
+                                                        readOnly={!editing}
+                                                        value={
+                                                            editing
+                                                                ? price
+                                                                : (selectedService?.price ?? 0)
+                                                        }
+                                                        onChange={(event) =>
+                                                            setPrice(event.target.value)
+                                                        }
+                                                        required
+                                                    />
+                                                </label>
+                                                <label>
+                                                    Знижка / націнка, %
+                                                    <input
+                                                        className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                        type="number"
+                                                        min="-100"
+                                                        max="1000"
+                                                        step="0.01"
+                                                        value={adjustment}
+                                                        onChange={(event) =>
+                                                            setAdjustment(event.target.value)
+                                                        }
+                                                        required
+                                                    />
+                                                    <small>
+                                                        Наприклад, −10 — знижка, +15 — складність.
+                                                    </small>
+                                                </label>
+                                                <label>
+                                                    Примітка
+                                                    <input
+                                                        className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                        value={note}
+                                                        onChange={(event) =>
+                                                            setNote(event.target.value)
+                                                        }
+                                                        maxLength={500}
+                                                        placeholder="Особливості роботи чи причина націнки"
+                                                    />
+                                                </label>
+                                            </fieldset>
+                                            <div className="estimate-preview flex justify-between items-center gap-3 py-5 px-6 text-[13px] bg-[#f5f3fd] [&_strong]:text-[20px] [&_strong]:font-[550]">
+                                                Сума пункту{' '}
+                                                <strong>
+                                                    {preview === null
+                                                        ? 'Перевірте значення'
+                                                        : formatPrice(preview)}
+                                                </strong>
+                                            </div>
+                                            <div className="form-actions py-4.5 px-6 border-t border-line flex justify-end gap-2.5 max-[761px]:px-4.5">
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    disabled={disabled}
+                                                    onClick={() => setItemForm(false)}
+                                                >
+                                                    Скасувати
+                                                </Button>
+                                                <Button
+                                                    type="submit"
+                                                    variant="brand"
+                                                    disabled={disabled || preview === null}
+                                                >
+                                                    {busy ? 'Зберігаємо…' : 'Зберегти роботу'}
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    )}
+                                </section>
+                                {needsRetry && (
+                                    <button
+                                        disabled={busy}
+                                        className="mt-3 text-brand underline"
+                                        onClick={() => void mutate('', {}, true)}
+                                    >
+                                        Повторити той самий запит
+                                    </button>
+                                )}
+                            </ActionModal>
+                        )}
+                        {action && (
+                            <ActionModal
+                                title="Оплата та зарахування"
+                                onClose={() => setAction(null)}
+                                busy={busy}
+                                error={error}
+                            >
+                                <section className="workspace-panel bg-[#fff] border border-line rounded-[14px] min-w-0 project-form-panel border-[#ddd7f5]! shadow-[0_5px_20px_#6155db06] [&_.eyebrow]:mb-[7px] [&_.workspace-error]:mt-0 [&_.workspace-error]:mx-6 [&_.workspace-error]:mb-5">
+                                    <div className="panel-heading flex justify-between items-start gap-4 pt-[25px] px-6 pb-5 [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:tracking-[-.03em] [&_p]:text-subtle [&_p]:text-[11px] [&_p]:mt-[7px] max-[761px]:pt-[21px] max-[761px]:px-4.5 max-[761px]:pb-4.5">
+                                        <div>
+                                            <h2>
+                                                {action.kind === 'payment'
+                                                    ? action.item
+                                                        ? 'Нова оплата за роботу'
+                                                        : 'Аванс за весь проєкт'
+                                                    : action.kind === 'allocate'
+                                                      ? 'Зарахувати отриманий аванс'
+                                                      : action.kind === 'complete_item'
+                                                        ? action.item?.completed_at
+                                                            ? 'Повернути роботу до невиконаних'
+                                                            : 'Позначити роботу виконаною'
+                                                        : action.kind === 'void_payment'
+                                                          ? 'Скасувати помилковий запис оплати'
+                                                          : 'Повернути аванс до нерозподіленого залишку'}
+                                            </h2>
+                                            <p>
+                                                {action.item?.name ??
+                                                    'Усі зміни зберігаються в історії.'}
+                                            </p>
+                                        </div>
+                                        <button
+                                            className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[#f1f1f8]"
+                                            aria-label="Закрити дію"
+                                            disabled={disabled}
+                                            onClick={() => setAction(null)}
+                                        >
+                                            <X size={18} />
+                                        </button>
+                                    </div>
+                                    <form onSubmit={saveAction}>
                                         <fieldset
                                             className="project-form-fields grid grid-cols-[1fr_1fr] gap-5 pt-1 px-6 pb-6 [&_label]:text-[#55596c] [&_label]:text-[12px] [&_label]:font-medium [&_label]:min-w-0 max-[761px]:grid-cols-[1fr] max-[761px]:px-4.5 max-[761px]:gap-[17px]"
                                             disabled={disabled}
                                         >
-                                            {!editing && (
-                                                <>
-                                                    <label>
-                                                        Пошук у прайсі
-                                                        <input
-                                                            className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
-                                                            value={search}
-                                                            onChange={(event) =>
-                                                                setSearch(event.target.value)
-                                                            }
-                                                            placeholder="Назва послуги"
-                                                        />
-                                                    </label>
-                                                    <label>
-                                                        Послуга
-                                                        <select
-                                                            className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
-                                                            required
-                                                            value={serviceId}
-                                                            onChange={(event) =>
-                                                                setServiceId(event.target.value)
-                                                            }
-                                                        >
-                                                            <option value="">
-                                                                Оберіть послугу
-                                                            </option>
-                                                            {services
-                                                                .filter(
-                                                                    (service) =>
-                                                                        service.id === serviceId ||
-                                                                        service.name
-                                                                            .toLocaleLowerCase(
-                                                                                'uk-UA',
-                                                                            )
-                                                                            .includes(
-                                                                                search.toLocaleLowerCase(
-                                                                                    'uk-UA',
-                                                                                ),
-                                                                            ),
-                                                                )
-                                                                .map((service) => (
-                                                                    <option
-                                                                        key={service.id}
-                                                                        value={service.id}
-                                                                    >
-                                                                        {service.name} ·{' '}
-                                                                        {formatPrice(
-                                                                            Number(service.price),
-                                                                        )}
-                                                                        /
-                                                                        {serviceUnits[service.unit]}
-                                                                    </option>
-                                                                ))}
-                                                        </select>
-                                                    </label>
-                                                </>
+                                            {(action.kind === 'payment' ||
+                                                action.kind === 'allocate') && (
+                                                <label>
+                                                    Сума, ₴
+                                                    <input
+                                                        className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                        type="number"
+                                                        min="0.01"
+                                                        step="0.01"
+                                                        max={
+                                                            action.item
+                                                                ? Math.min(
+                                                                      Math.round(
+                                                                          (Number(
+                                                                              action.item
+                                                                                  .line_total,
+                                                                          ) -
+                                                                              Number(
+                                                                                  action.item
+                                                                                      .paid_amount,
+                                                                              )) *
+                                                                              100,
+                                                                      ) / 100,
+                                                                      action.kind === 'allocate'
+                                                                          ? balance.unallocated
+                                                                          : Infinity,
+                                                                  )
+                                                                : 9999999999.99
+                                                        }
+                                                        value={amount}
+                                                        onChange={(event) =>
+                                                            setAmount(event.target.value)
+                                                        }
+                                                        required
+                                                    />
+                                                </label>
                                             )}
                                             <label>
-                                                Кількість{' '}
-                                                {editing || selectedService
-                                                    ? `(${serviceUnits[(editing ?? selectedService)!.unit]})`
-                                                    : ''}
+                                                Дата й час події
                                                 <input
                                                     className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
-                                                    type="number"
-                                                    min="0.001"
-                                                    max="999999999.999"
-                                                    step="0.001"
-                                                    value={quantity}
+                                                    type="datetime-local"
+                                                    value={date}
                                                     onChange={(event) =>
-                                                        setQuantity(event.target.value)
+                                                        setDate(event.target.value)
                                                     }
                                                     required
                                                 />
+                                                <small>Місцевий час вашого пристрою.</small>
                                             </label>
                                             <label>
-                                                Ціна за одиницю, ₴
+                                                {action.kind === 'void_payment'
+                                                    ? 'Причина скасування'
+                                                    : 'Примітка'}
                                                 <input
                                                     className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
-                                                    type="number"
-                                                    min="0"
-                                                    max="9999999999.99"
-                                                    step="0.01"
-                                                    readOnly={!editing}
-                                                    value={
-                                                        editing
-                                                            ? price
-                                                            : (selectedService?.price ?? 0)
-                                                    }
+                                                    value={actionNote}
                                                     onChange={(event) =>
-                                                        setPrice(event.target.value)
-                                                    }
-                                                    required
-                                                />
-                                            </label>
-                                            <label>
-                                                Знижка / націнка, %
-                                                <input
-                                                    className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
-                                                    type="number"
-                                                    min="-100"
-                                                    max="1000"
-                                                    step="0.01"
-                                                    value={adjustment}
-                                                    onChange={(event) =>
-                                                        setAdjustment(event.target.value)
-                                                    }
-                                                    required
-                                                />
-                                                <small>
-                                                    Наприклад, −10 — знижка, +15 — складність.
-                                                </small>
-                                            </label>
-                                            <label>
-                                                Примітка
-                                                <input
-                                                    className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
-                                                    value={note}
-                                                    onChange={(event) =>
-                                                        setNote(event.target.value)
+                                                        setActionNote(event.target.value)
                                                     }
                                                     maxLength={500}
-                                                    placeholder="Особливості роботи чи причина націнки"
+                                                    required={action.kind === 'void_payment'}
                                                 />
                                             </label>
                                         </fieldset>
-                                        <div className="estimate-preview flex justify-between items-center gap-3 py-5 px-6 text-[13px] bg-[#f5f3fd] [&_strong]:text-[20px] [&_strong]:font-[550]">
-                                            Сума пункту{' '}
-                                            <strong>
-                                                {preview === null
-                                                    ? 'Перевірте значення'
-                                                    : formatPrice(preview)}
-                                            </strong>
-                                        </div>
+                                        {action.kind === 'payment' &&
+                                            action.item &&
+                                            balance.unallocated > 0 && (
+                                                <div className="category-help pt-0 px-6 pb-5 text-subtle text-[11px] leading-[1.7]">
+                                                    У проєкті є {formatPrice(balance.unallocated)}{' '}
+                                                    авансу. Якщо це вже отримані кошти,{' '}
+                                                    <button
+                                                        type="button"
+                                                        className="estimate-text-button underline text-[#6155db]"
+                                                        onClick={() =>
+                                                            openAction({
+                                                                kind: 'allocate',
+                                                                item: action.item,
+                                                            })
+                                                        }
+                                                    >
+                                                        зарахуйте аванс замість нової оплати
+                                                    </button>
+                                                    .
+                                                </div>
+                                            )}
+                                        {action.kind === 'void_payment' && (
+                                            <p className="category-help pt-0 px-6 pb-5 text-subtle text-[11px] leading-[1.7]">
+                                                Це виправлення помилкового запису, а не повернення
+                                                грошей замовнику. Усі зарахування цієї оплати також
+                                                перестануть враховуватись.
+                                            </p>
+                                        )}
+                                        {action.kind === 'release_advance' && (
+                                            <p className="category-help pt-0 px-6 pb-5 text-subtle text-[11px] leading-[1.7]">
+                                                Гроші залишаться в проєкті. Зміниться лише їхнє
+                                                зарахування на цю роботу.
+                                            </p>
+                                        )}
                                         <div className="form-actions py-4.5 px-6 border-t border-line flex justify-end gap-2.5 max-[761px]:px-4.5">
                                             <Button
                                                 type="button"
                                                 variant="ghost"
                                                 disabled={disabled}
-                                                onClick={() => setItemForm(false)}
+                                                onClick={() => setAction(null)}
                                             >
                                                 Скасувати
                                             </Button>
                                             <Button
                                                 type="submit"
                                                 variant="brand"
-                                                disabled={disabled || preview === null}
+                                                disabled={disabled}
                                             >
-                                                {busy ? 'Зберігаємо…' : 'Зберегти роботу'}
+                                                {busy ? 'Зберігаємо…' : 'Підтвердити'}
                                             </Button>
                                         </div>
                                     </form>
-                                )}
-                            </section>
-                        )}
-                        {action && (
-                            <section className="workspace-panel bg-[#fff] border border-line rounded-[14px] min-w-0 project-form-panel border-[#ddd7f5]! shadow-[0_5px_20px_#6155db06] [&_.eyebrow]:mb-[7px] [&_.workspace-error]:mt-0 [&_.workspace-error]:mx-6 [&_.workspace-error]:mb-5">
-                                <div className="panel-heading flex justify-between items-start gap-4 pt-[25px] px-6 pb-5 [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:tracking-[-.03em] [&_p]:text-subtle [&_p]:text-[11px] [&_p]:mt-[7px] max-[761px]:pt-[21px] max-[761px]:px-4.5 max-[761px]:pb-4.5">
-                                    <div>
-                                        <h2>
-                                            {action.kind === 'payment'
-                                                ? action.item
-                                                    ? 'Нова оплата за роботу'
-                                                    : 'Аванс за весь проєкт'
-                                                : action.kind === 'allocate'
-                                                  ? 'Зарахувати отриманий аванс'
-                                                  : action.kind === 'complete_item'
-                                                    ? action.item?.completed_at
-                                                        ? 'Повернути роботу до невиконаних'
-                                                        : 'Позначити роботу виконаною'
-                                                    : action.kind === 'void_payment'
-                                                      ? 'Скасувати помилковий запис оплати'
-                                                      : 'Повернути аванс до нерозподіленого залишку'}
-                                        </h2>
-                                        <p>
-                                            {action.item?.name ??
-                                                'Усі зміни зберігаються в історії.'}
-                                        </p>
-                                    </div>
+                                </section>
+                                {needsRetry && (
                                     <button
-                                        className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[#f1f1f8]"
-                                        aria-label="Закрити дію"
-                                        disabled={disabled}
-                                        onClick={() => setAction(null)}
+                                        disabled={busy}
+                                        className="mt-3 text-brand underline"
+                                        onClick={() => void mutate('', {}, true)}
                                     >
-                                        <X size={18} />
+                                        Повторити той самий запит
                                     </button>
-                                </div>
-                                <form onSubmit={saveAction}>
-                                    <fieldset
-                                        className="project-form-fields grid grid-cols-[1fr_1fr] gap-5 pt-1 px-6 pb-6 [&_label]:text-[#55596c] [&_label]:text-[12px] [&_label]:font-medium [&_label]:min-w-0 max-[761px]:grid-cols-[1fr] max-[761px]:px-4.5 max-[761px]:gap-[17px]"
-                                        disabled={disabled}
-                                    >
-                                        {(action.kind === 'payment' ||
-                                            action.kind === 'allocate') && (
-                                            <label>
-                                                Сума, ₴
-                                                <input
-                                                    className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
-                                                    type="number"
-                                                    min="0.01"
-                                                    step="0.01"
-                                                    max={
-                                                        action.item
-                                                            ? Math.min(
-                                                                  Math.round(
-                                                                      (Number(
-                                                                          action.item.line_total,
-                                                                      ) -
-                                                                          Number(
-                                                                              action.item
-                                                                                  .paid_amount,
-                                                                          )) *
-                                                                          100,
-                                                                  ) / 100,
-                                                                  action.kind === 'allocate'
-                                                                      ? balance.unallocated
-                                                                      : Infinity,
-                                                              )
-                                                            : 9999999999.99
-                                                    }
-                                                    value={amount}
-                                                    onChange={(event) =>
-                                                        setAmount(event.target.value)
-                                                    }
-                                                    required
-                                                />
-                                            </label>
-                                        )}
-                                        <label>
-                                            Дата й час події
-                                            <input
-                                                className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
-                                                type="datetime-local"
-                                                value={date}
-                                                onChange={(event) => setDate(event.target.value)}
-                                                required
-                                            />
-                                            <small>Місцевий час вашого пристрою.</small>
-                                        </label>
-                                        <label>
-                                            {action.kind === 'void_payment'
-                                                ? 'Причина скасування'
-                                                : 'Примітка'}
-                                            <input
-                                                className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
-                                                value={actionNote}
-                                                onChange={(event) =>
-                                                    setActionNote(event.target.value)
-                                                }
-                                                maxLength={500}
-                                                required={action.kind === 'void_payment'}
-                                            />
-                                        </label>
-                                    </fieldset>
-                                    {action.kind === 'payment' &&
-                                        action.item &&
-                                        balance.unallocated > 0 && (
-                                            <div className="category-help pt-0 px-6 pb-5 text-subtle text-[11px] leading-[1.7]">
-                                                У проєкті є {formatPrice(balance.unallocated)}{' '}
-                                                авансу. Якщо це вже отримані кошти,{' '}
-                                                <button
-                                                    type="button"
-                                                    className="estimate-text-button underline text-[#6155db]"
-                                                    onClick={() =>
-                                                        openAction({
-                                                            kind: 'allocate',
-                                                            item: action.item,
-                                                        })
-                                                    }
-                                                >
-                                                    зарахуйте аванс замість нової оплати
-                                                </button>
-                                                .
-                                            </div>
-                                        )}
-                                    {action.kind === 'void_payment' && (
-                                        <p className="category-help pt-0 px-6 pb-5 text-subtle text-[11px] leading-[1.7]">
-                                            Це виправлення помилкового запису, а не повернення
-                                            грошей замовнику. Усі зарахування цієї оплати також
-                                            перестануть враховуватись.
-                                        </p>
-                                    )}
-                                    {action.kind === 'release_advance' && (
-                                        <p className="category-help pt-0 px-6 pb-5 text-subtle text-[11px] leading-[1.7]">
-                                            Гроші залишаться в проєкті. Зміниться лише їхнє
-                                            зарахування на цю роботу.
-                                        </p>
-                                    )}
-                                    <div className="form-actions py-4.5 px-6 border-t border-line flex justify-end gap-2.5 max-[761px]:px-4.5">
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            disabled={disabled}
-                                            onClick={() => setAction(null)}
-                                        >
-                                            Скасувати
-                                        </Button>
-                                        <Button type="submit" variant="brand" disabled={disabled}>
-                                            {busy ? 'Зберігаємо…' : 'Підтвердити'}
-                                        </Button>
-                                    </div>
-                                </form>
-                            </section>
+                                )}
+                            </ActionModal>
                         )}
                         <div className="workspace-panel bg-[#fff] border border-line rounded-[14px] min-w-0">
                             <div className="panel-heading flex justify-between items-start gap-4 pt-[25px] px-6 pb-5 [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:tracking-[-.03em] [&_p]:text-subtle [&_p]:text-[11px] [&_p]:mt-[7px] max-[761px]:pt-[21px] max-[761px]:px-4.5 max-[761px]:pb-4.5">
@@ -791,7 +865,10 @@ export function ProjectEstimate({
                                                             · додано {displayDate(item.created_at)}
                                                         </span>
                                                     </div>
-                                                    <div className="price-row-actions flex justify-end">
+                                                    <div
+                                                        hidden={view !== 'estimate'}
+                                                        className="price-row-actions flex justify-end"
+                                                    >
                                                         <button
                                                             className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[#f1f1f8]"
                                                             disabled={disabled || estimateLocked}
@@ -848,7 +925,10 @@ export function ProjectEstimate({
                                                         {item.note}
                                                     </p>
                                                 )}
-                                                <div className="estimate-item-states flex gap-3 items-center flex-wrap">
+                                                <div
+                                                    hidden={view !== 'payments'}
+                                                    className="estimate-item-states flex gap-3 items-center flex-wrap"
+                                                >
                                                     {!workflowMode && (
                                                         <>
                                                             <button
@@ -919,7 +999,10 @@ export function ProjectEstimate({
                                                         {formatPrice(paid)} / {formatPrice(total)}
                                                     </span>
                                                 </div>
-                                                <div className="estimate-item-actions flex gap-2.5 flex-wrap mt-[15px]">
+                                                <div
+                                                    hidden={view !== 'payments'}
+                                                    className="estimate-item-actions flex gap-2.5 flex-wrap mt-[15px]"
+                                                >
                                                     {!isPaid && (
                                                         <>
                                                             <Button
@@ -978,7 +1061,10 @@ export function ProjectEstimate({
                                 <strong>{formatPrice(Number(detail.project.total))}</strong>
                             </div>
                         </div>
-                        <section className="workspace-panel bg-[#fff] border border-line rounded-[14px] min-w-0">
+                        <section
+                            hidden={view !== 'payments'}
+                            className="workspace-panel bg-[#fff] border border-line rounded-[14px] min-w-0"
+                        >
                             <div className="panel-heading flex justify-between items-start gap-4 pt-[25px] px-6 pb-5 [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:tracking-[-.03em] [&_p]:text-subtle [&_p]:text-[11px] [&_p]:mt-[7px] max-[761px]:pt-[21px] max-[761px]:px-4.5 max-[761px]:pb-4.5">
                                 <div>
                                     <h2>Оплати замовника</h2>

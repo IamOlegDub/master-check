@@ -1,6 +1,6 @@
 # My Estimate
 
-A workspace for tradespeople: projects, initial costs and payments, a custom service price list, and PDFs for customers.
+A workspace for tradespeople and customers: estimates, approved work reports, payments, service price lists, contacts and public portfolios.
 
 Deployment: [Vercel setup guide](docs/DEPLOYMENT.md). Estimate and payment rules: [supabase/README.md](supabase/README.md).
 
@@ -25,7 +25,7 @@ UI styles: [Tailwind component guide](docs/STYLING.md). Format components with `
 - PDF export of the entire price list or the current selection, with Cyrillic support and multipage tables.
 - Responsive interface using the Inter font.
 
-Estimate items support quantities, frozen unit prices, percentage discounts/surcharges, completion dates, partial payments and separately tracked advances. Advances can be allocated to chosen items without counting money twice. All changes have an event history. Portfolio features are not implemented yet.
+Estimate items support quantities, frozen unit prices, percentage discounts/surcharges, completion dates, partial payments and separately tracked advances. Advances can be allocated to chosen items without counting money twice. All changes have an event history. Projects have separate Estimate, Work, Payments and Access tabs, readable /username/project-slug URLs, customer approvals, photo reports and one overview video. Portfolio albums support stable public links. The app includes mobile navigation, loading states, custom error pages and installable PWA support. See [Workspace setup and workflows](docs/WORKSPACE.md); apply migration 202609240001 before deploying this update.
 
 ## Checks
 
@@ -42,7 +42,7 @@ To deploy, add the variables from `.env.example` to your hosting settings and al
 
 # Мій кошторис
 
-Кабінет майстра: проєкти, початкова вартість та оплата, власний прайс послуг і PDF для замовників.
+Робочий простір майстра й замовника: кошториси, погодження виконаних робіт, оплати, прайс послуг, контакти та публічне портфоліо.
 
 Деплой: [інструкція Vercel](docs/DEPLOYMENT.md). Правила кошторису й оплат: [supabase/README.md](supabase/README.md).
 
@@ -67,7 +67,7 @@ To deploy, add the variables from `.env.example` to your hosting settings and al
 - PDF усього прайсу або поточної вибірки, з кирилицею та багатосторінковими таблицями.
 - Адаптивний інтерфейс зі шрифтом Inter.
 
-Пункти кошторису підтримують кількість, збережену ціну за одиницю, знижку/націнку у відсотках, дату виконання, часткові оплати та окремий облік авансів. Аванс можна зарахувати на обрані роботи без подвійного врахування грошей. Зміни мають історію. Портфоліо ще не реалізоване.
+Пункти кошторису підтримують кількість, збережену ціну за одиницю, знижку/націнку у відсотках, дату виконання, часткові оплати та окремий облік авансів. Аванс можна зарахувати на обрані роботи без подвійного врахування грошей. Зміни мають історію. Проєкт має вкладки «Кошторис», «Виконання», «Оплати» та «Доступ», адресу /username/назва-латинкою, погодження замовником, фотозвіти й оглядове відео. Альбоми портфоліо мають стабільні публічні посилання. Є мобільна навігація, індикатори завантаження, власні сторінки помилок і встановлення як PWA. [Налаштування й сценарії роботи](docs/WORKSPACE.md); перед деплоєм цього оновлення застосуйте міграцію 202609240001.
 
 ## Перевірки
 

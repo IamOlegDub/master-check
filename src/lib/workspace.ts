@@ -7,6 +7,10 @@ export const statusLabels = {
 } as const;
 export type WorkspaceProject = {
     id: string;
+    slug?: string;
+    owner_username?: string | null;
+    overview_video_path?: string | null;
+    overview_video_at?: string | null;
     user_id: string;
     name: string;
     client: string;

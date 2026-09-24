@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { BusyIndicator } from '@/components/feedback';
 import {
     Download,
     FolderPlus,
@@ -284,6 +285,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
 
     return (
         <div className="price-list grid gap-5 min-w-0 [&_.icon-button:disabled]:opacity-[.35]">
+            <BusyIndicator busy={busy} />
             <div className="price-actions flex items-center justify-between gap-3.5 flex-wrap [&_>_p]:text-subtle [&_>_p]:text-[12px] [&_>_div]:flex [&_>_div]:gap-2.5 [&_>_div]:flex-wrap max-[761px]:[&_>_div]:w-full max-[761px]:[&_button]:flex-1">
                 <p>Ваші навички. Ваші ціни.</p>
                 <div>

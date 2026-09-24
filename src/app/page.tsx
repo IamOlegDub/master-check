@@ -29,6 +29,7 @@ export default async function Home({
                 projects={projects ?? []}
                 contacts={contacts.data ?? []}
                 role={c.role}
+                username={c.username}
                 userId={c.user.id}
                 overview
             />

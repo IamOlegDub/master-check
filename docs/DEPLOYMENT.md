@@ -1,6 +1,8 @@
-﻿# Deploy to Vercel / Деплой на Vercel
+# Deploy to Vercel / Деплой на Vercel
 
 ## English
+
+Before deploying this update, apply all unapplied migrations through 202609240001_readable_urls_and_media.sql. See [Workspace migration steps](WORKSPACE.md). No new environment variables are required.
 
 Vercel supports this Next.js app and provides an available `your-name.vercel.app` address. A custom domain can be connected later. Hobby is for personal, non-commercial use; commercial use requires an appropriate paid plan. See https://vercel.com/docs/plans/hobby.
 
@@ -21,6 +23,8 @@ New pushes to the production branch `master` deploy automatically. Environment v
 Buy the domain separately, add it under **Settings → Domains**, and enter the DNS records Vercel displays. Set it as the main domain and wait for HTTPS. Update Supabase Site URL and callbacks and Google OAuth origins. Your data remains in the same Supabase database.
 
 ## Українською
+
+Перед деплоєм оновлення застосуйте всі ще не виконані міграції до 202609240001_readable_urls_and_media.sql включно. [Порядок оновлення бази](WORKSPACE.md). Нових env-змінних не потрібно.
 
 Vercel підтримує цей Next.js-застосунок і дає вільну адресу `ваша-назва.vercel.app`. Власний домен можна підключити згодом. Hobby призначений для особистого некомерційного використання; комерційна робота потребує відповідного платного тарифу. Умови: https://vercel.com/docs/plans/hobby.
 
