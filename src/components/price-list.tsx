@@ -310,7 +310,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
             {notice && (
                 <p
                     role="status"
-                    className="workspace-notice rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[#34755c] bg-[#edf7f1] border border-[#d7eddf]"
+                    className="workspace-notice rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[var(--tone-text-34755c)] bg-[var(--tone-bg-edf7f1)] border border-[var(--tone-border-d7eddf)]"
                 >
                     {notice}
                 </p>
@@ -318,7 +318,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
             {error && (
                 <p
                     role="alert"
-                    className="workspace-error rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[#a14752] bg-[#fcf0f1] border border-[#f1dce0]"
+                    className="workspace-error rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[var(--tone-text-a14752)] bg-[var(--tone-bg-fcf0f1)] border border-[var(--tone-border-f1dce0)]"
                 >
                     {error}
                 </p>
@@ -334,7 +334,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
             ) : loadError ? (
                 <div
                     role="alert"
-                    className="workspace-error rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[#a14752] bg-[#fcf0f1] border border-[#f1dce0]"
+                    className="workspace-error rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[var(--tone-text-a14752)] bg-[var(--tone-bg-fcf0f1)] border border-[var(--tone-border-f1dce0)]"
                 >
                     <p>{loadError}</p>
                     <Button variant="outline" className="mt-3" onClick={() => void reload()}>
@@ -344,7 +344,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
             ) : (
                 <>
                     {showCategories && (
-                        <section className="workspace-panel bg-[#fff] border border-line rounded-[14px] min-w-0">
+                        <section className="workspace-panel bg-[var(--tone-bg-ffffff)] border border-line rounded-[14px] min-w-0">
                             <div className="panel-heading flex justify-between items-start gap-4 pt-[25px] px-6 pb-5 [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:tracking-[-.03em] [&_p]:text-subtle [&_p]:text-[11px] [&_p]:mt-[7px] max-[761px]:pt-[21px] max-[761px]:px-4.5 max-[761px]:pb-4.5">
                                 <div>
                                     <h2>Ваші категорії</h2>
@@ -354,7 +354,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                     </p>
                                 </div>
                                 <button
-                                    className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[#f1f1f8]"
+                                    className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[var(--tone-bg-f1f1f8)]"
                                     aria-label="Закрити категорії"
                                     onClick={() => setShowCategories(false)}
                                 >
@@ -363,14 +363,14 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                             </div>
                             <form
                                 onSubmit={saveCategory}
-                                className="category-form flex items-end gap-3 pt-0 px-6 pb-5 flex-wrap [&_label]:flex-1 [&_label]:min-w-47.5 [&_label]:text-[12px] [&_label]:text-[#55596c] max-[761px]:px-4.5"
+                                className="category-form flex items-end gap-3 pt-0 px-6 pb-5 flex-wrap [&_label]:flex-1 [&_label]:min-w-47.5 [&_label]:text-[12px] [&_label]:text-[var(--tone-text-55596c)] max-[761px]:px-4.5"
                             >
                                 <label>
                                     {categoryEditing
                                         ? 'Нова назва категорії'
                                         : 'Назва нової категорії'}
                                     <input
-                                        className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                        className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                         value={categoryName}
                                         onChange={(event) => setCategoryName(event.target.value)}
                                         placeholder="Наприклад, сантехніка"
@@ -408,7 +408,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                                 <small>{count} послуг</small>
                                             </span>
                                             <button
-                                                className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[#f1f1f8]"
+                                                className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[var(--tone-bg-f1f1f8)]"
                                                 disabled={busy}
                                                 aria-label={`Перейменувати ${category.name}`}
                                                 onClick={() => {
@@ -419,7 +419,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                                 <Pencil size={15} />
                                             </button>
                                             <button
-                                                className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[#f1f1f8]"
+                                                className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[var(--tone-bg-f1f1f8)]"
                                                 disabled={busy || count > 0}
                                                 title={
                                                     count
@@ -442,14 +442,14 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                         </section>
                     )}
                     {showForm && (
-                        <section className="workspace-panel bg-[#fff] border border-line rounded-[14px] min-w-0 project-form-panel border-[#ddd7f5]! shadow-[0_5px_20px_#6155db06] [&_.eyebrow]:mb-[7px] [&_.workspace-error]:mt-0 [&_.workspace-error]:mx-6 [&_.workspace-error]:mb-5">
+                        <section className="workspace-panel bg-[var(--tone-bg-ffffff)] border border-line rounded-[14px] min-w-0 project-form-panel border-[var(--tone-border-ddd7f5)]! shadow-[0_5px_20px_#6155db06] [&_.eyebrow]:mb-[7px] [&_.workspace-error]:mt-0 [&_.workspace-error]:mx-6 [&_.workspace-error]:mb-5">
                             <div className="panel-heading flex justify-between items-start gap-4 pt-[25px] px-6 pb-5 [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:tracking-[-.03em] [&_p]:text-subtle [&_p]:text-[11px] [&_p]:mt-[7px] max-[761px]:pt-[21px] max-[761px]:px-4.5 max-[761px]:pb-4.5">
                                 <div>
                                     <h2>{editing ? 'Редагувати послугу' : 'Нова послуга'}</h2>
                                     <p>Вартість за одну обрану одиницю. Валюта — гривня.</p>
                                 </div>
                                 <button
-                                    className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[#f1f1f8]"
+                                    className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[var(--tone-bg-f1f1f8)]"
                                     disabled={busy}
                                     aria-label="Закрити форму послуги"
                                     onClick={() => setShowForm(false)}
@@ -465,14 +465,14 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                 <form key={editing?.id ?? 'new'} onSubmit={saveService}>
                                     <fieldset
                                         disabled={busy}
-                                        className="project-form-fields grid grid-cols-[1fr_1fr] gap-5 pt-1 px-6 pb-6 [&_label]:text-[#55596c] [&_label]:text-[12px] [&_label]:font-medium [&_label]:min-w-0 max-[761px]:grid-cols-[1fr] max-[761px]:px-4.5 max-[761px]:gap-[17px]"
+                                        className="project-form-fields grid grid-cols-[1fr_1fr] gap-5 pt-1 px-6 pb-6 [&_label]:text-[var(--tone-text-55596c)] [&_label]:text-[12px] [&_label]:font-medium [&_label]:min-w-0 max-[761px]:grid-cols-[1fr] max-[761px]:px-4.5 max-[761px]:gap-[17px]"
                                     >
                                         <label>
                                             Назва послуги
                                             <input
                                                 autoFocus
                                                 name="name"
-                                                className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                                 required
                                                 maxLength={160}
                                                 defaultValue={editing?.name ?? ''}
@@ -483,7 +483,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                             Категорія
                                             <select
                                                 name="category_id"
-                                                className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                                 required
                                                 defaultValue={
                                                     editing?.category_id ??
@@ -501,12 +501,12 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                             Ціна за одиницю, ₴
                                             <input
                                                 name="price"
-                                                className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                                 type="number"
                                                 inputMode="decimal"
                                                 min="0"
-                                                max="9999999999.99"
-                                                step="0.01"
+                                                max="9999999999"
+                                                step="1"
                                                 required
                                                 defaultValue={editing?.price ?? ''}
                                                 placeholder="0,00"
@@ -516,7 +516,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                             Одиниця виміру
                                             <select
                                                 name="unit"
-                                                className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                                 defaultValue={editing?.unit ?? 'm2'}
                                             >
                                                 {Object.entries(serviceUnits).map(
@@ -551,11 +551,11 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                         </section>
                     )}
                     {services.length === 0 ? (
-                        <section className="workspace-panel bg-[#fff] border border-line rounded-[14px] min-w-0 empty-projects py-14.5 px-6 text-center [&_h2]:text-[23px] [&_h2]:font-[550] [&_h2]:tracking-[-.04em] [&_h2]:my-2.5 [&_h2]:mx-0 [&_>_p]:text-[12px] [&_>_p]:leading-[1.9] [&_>_p]:text-subtle [&_>_p]:max-w-92.5 [&_>_p]:mt-0 [&_>_p]:mx-auto [&_>_p]:mb-[25px] max-[761px]:py-[45px] max-[761px]:px-4.5 max-[761px]:[&_h2]:text-[22px]">
-                            <div className="empty-art relative flex items-center justify-center w-21.5 h-21.5 rounded-[24px] mt-0 mx-auto mb-7.5 bg-[#f1effb] text-[#8d7ec9] border border-[#e8e3f7] rotate-[-6deg] [&_>_svg]:rotate-[6deg] [&_i]:inline-flex [&_i]:absolute [&_i]:bottom-[-5px] [&_i]:right-[-7px] [&_i]:p-1.5 [&_i]:bg-[#6155db] [&_i]:text-[#fff] [&_i]:rounded-[9px] [&_i]:border-3 [&_i]:border-[#fff]">
+                        <section className="workspace-panel bg-[var(--tone-bg-ffffff)] border border-line rounded-[14px] min-w-0 empty-projects py-14.5 px-6 text-center [&_h2]:text-[23px] [&_h2]:font-[550] [&_h2]:tracking-[-.04em] [&_h2]:my-2.5 [&_h2]:mx-0 [&_>_p]:text-[12px] [&_>_p]:leading-[1.9] [&_>_p]:text-subtle [&_>_p]:max-w-92.5 [&_>_p]:mt-0 [&_>_p]:mx-auto [&_>_p]:mb-[25px] max-[761px]:py-[45px] max-[761px]:px-4.5 max-[761px]:[&_h2]:text-[22px]">
+                            <div className="empty-art relative flex items-center justify-center w-21.5 h-21.5 rounded-[24px] mt-0 mx-auto mb-7.5 bg-[var(--tone-bg-f1effb)] text-[var(--tone-text-8d7ec9)] border border-[var(--tone-border-e8e3f7)] rotate-[-6deg] [&_>_svg]:rotate-[6deg] [&_i]:inline-flex [&_i]:absolute [&_i]:bottom-[-5px] [&_i]:right-[-7px] [&_i]:p-1.5 [&_i]:bg-[#6155db] [&_i]:text-white [&_i]:rounded-[9px] [&_i]:border-3 [&_i]:border-[var(--tone-border-ffffff)]">
                                 <Layers3 size={35} strokeWidth={1.3} />
                             </div>
-                            <span className="eyebrow block text-[#89859e] text-[9px] font-semibold tracking-[.13em]">
+                            <span className="eyebrow block text-[var(--tone-text-89859e)] text-[9px] font-semibold tracking-[.13em]">
                                 ВАША РОБОТА МАЄ ЦІНУ
                             </span>
                             <h2>Створіть свій прайс-лист</h2>
@@ -577,12 +577,12 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                         </section>
                     ) : (
                         <>
-                            <section className="workspace-panel bg-[#fff] border border-line rounded-[14px] min-w-0">
+                            <section className="workspace-panel bg-[var(--tone-bg-ffffff)] border border-line rounded-[14px] min-w-0">
                                 <div className="panel-heading flex justify-between items-start gap-4 pt-[25px] px-6 pb-5 [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:tracking-[-.03em] [&_p]:text-subtle [&_p]:text-[11px] [&_p]:mt-[7px] max-[761px]:pt-[21px] max-[761px]:px-4.5 max-[761px]:pb-4.5">
                                     <div>
                                         <h2>
                                             Послуги та ціни{' '}
-                                            <span className="count-badge inline-flex py-[1px] px-[7px] bg-[#f2f1f8] text-[#817793] rounded-[5px] text-[10px]">
+                                            <span className="count-badge inline-flex py-[1px] px-[7px] bg-[var(--tone-bg-f2f1f8)] text-[var(--tone-text-817793)] rounded-[5px] text-[10px]">
                                                 {services.length}
                                             </span>
                                         </h2>
@@ -600,7 +600,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                         Оновити
                                     </Button>
                                 </div>
-                                <div className="price-filters flex flex-wrap gap-2.5 pt-0 px-6 pb-5 [&_.project-search]:basis-45 [&_>_select]:border [&_>_select]:border-line [&_>_select]:rounded-[8px] [&_>_select]:p-[9px] [&_>_select]:bg-[#fff] [&_>_select]:text-[#717486] [&_>_select]:text-[12px] [&_>_select]:max-w-full max-[761px]:px-4.5">
+                                <div className="price-filters flex flex-wrap gap-2.5 pt-0 px-6 pb-5 [&_.project-search]:basis-45 [&_>_select]:border [&_>_select]:border-line [&_>_select]:rounded-[8px] [&_>_select]:p-[9px] [&_>_select]:bg-[var(--tone-bg-ffffff)] [&_>_select]:text-[var(--tone-text-717486)] [&_>_select]:text-[12px] [&_>_select]:max-w-full max-[761px]:px-4.5">
                                     <label className="grid min-w-0 flex-1 basis-52 gap-2 text-xs text-ink">
                                         <span className="text-xs text-ink">Пошук послуг</span>
                                         <span className="flex min-h-11 items-center gap-2 rounded-lg border border-line px-3 focus-within:border-brand">
@@ -617,7 +617,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                     <label className="grid gap-2 text-xs">
                                         Категорія
                                         <select
-                                            className="min-h-11 rounded-lg border border-line bg-white px-3"
+                                            className="min-h-11 rounded-lg border border-line bg-card px-3"
                                             aria-label="Категорія послуг"
                                             value={categoryId}
                                             onChange={(event) => setCategoryId(event.target.value)}
@@ -633,7 +633,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                     <label className="grid gap-2 text-xs">
                                         Сортування
                                         <select
-                                            className="min-h-11 max-w-full rounded-lg border border-line bg-white px-3"
+                                            className="min-h-11 max-w-full rounded-lg border border-line bg-card px-3"
                                             aria-label="Сортування послуг"
                                             value={sort}
                                             onChange={(event) =>
@@ -656,7 +656,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                         <thead className="max-[761px]:sr-only">
                                             <tr>
                                                 <th
-                                                    className="border-y border-line bg-[#fafafe] px-[18px] py-3 text-left text-[10px] font-medium text-[#838597] [&:nth-child(4)]:text-right"
+                                                    className="border-y border-line bg-[var(--tone-bg-fafafe)] px-[18px] py-3 text-left text-[10px] font-medium text-[var(--tone-text-838597)] [&:nth-child(4)]:text-right"
                                                     scope="col"
                                                     aria-sort={
                                                         sort === 'name'
@@ -687,7 +687,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                                     </button>
                                                 </th>
                                                 <th
-                                                    className="border-y border-line bg-[#fafafe] px-[18px] py-3 text-left text-[10px] font-medium text-[#838597] [&:nth-child(4)]:text-right"
+                                                    className="border-y border-line bg-[var(--tone-bg-fafafe)] px-[18px] py-3 text-left text-[10px] font-medium text-[var(--tone-text-838597)] [&:nth-child(4)]:text-right"
                                                     scope="col"
                                                     aria-sort={
                                                         sort === 'category'
@@ -718,7 +718,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                                     </button>
                                                 </th>
                                                 <th
-                                                    className="border-y border-line bg-[#fafafe] px-[18px] py-3 text-left text-[10px] font-medium text-[#838597] [&:nth-child(4)]:text-right"
+                                                    className="border-y border-line bg-[var(--tone-bg-fafafe)] px-[18px] py-3 text-left text-[10px] font-medium text-[var(--tone-text-838597)] [&:nth-child(4)]:text-right"
                                                     scope="col"
                                                     aria-sort={
                                                         sort === 'unit'
@@ -749,7 +749,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                                     </button>
                                                 </th>
                                                 <th
-                                                    className="border-y border-line bg-[#fafafe] px-[18px] py-3 text-left text-[10px] font-medium text-[#838597] [&:nth-child(4)]:text-right"
+                                                    className="border-y border-line bg-[var(--tone-bg-fafafe)] px-[18px] py-3 text-left text-[10px] font-medium text-[var(--tone-text-838597)] [&:nth-child(4)]:text-right"
                                                     scope="col"
                                                     aria-sort={
                                                         sort === 'price-asc'
@@ -779,7 +779,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                                         </span>
                                                     </button>
                                                 </th>
-                                                <th className="border-y border-line bg-[#fafafe] px-[18px] py-3 text-left text-[10px] font-medium text-[#838597] [&:nth-child(4)]:text-right">
+                                                <th className="border-y border-line bg-[var(--tone-bg-fafafe)] px-[18px] py-3 text-left text-[10px] font-medium text-[var(--tone-text-838597)] [&:nth-child(4)]:text-right">
                                                     <span className="sr-only">Дії</span>
                                                 </th>
                                             </tr>
@@ -788,28 +788,28 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                             {visible.map((service) => (
                                                 <tr
                                                     key={service.id}
-                                                    className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 border-t border-line px-[18px] py-4 hover:bg-[#fcfbff] min-[761px]:table-row min-[761px]:border-t-0 min-[761px]:p-0"
+                                                    className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 border-t border-line px-[18px] py-4 hover:bg-[var(--tone-bg-fcfbff)] min-[761px]:table-row min-[761px]:border-t-0 min-[761px]:p-0"
                                                 >
-                                                    <td className="block min-w-0 min-[761px]:table-cell min-[761px]:border-b min-[761px]:border-[#f1f2f6] min-[761px]:px-[18px] min-[761px]:py-4 col-span-full text-sm font-medium wrap-anywhere min-[761px]:min-w-[170px] min-[761px]:max-w-[400px] min-[761px]:text-xs">
+                                                    <td className="block min-w-0 min-[761px]:table-cell min-[761px]:border-b min-[761px]:border-[var(--tone-border-f1f2f6)] min-[761px]:px-[18px] min-[761px]:py-4 col-span-full text-sm font-medium wrap-anywhere min-[761px]:min-w-[170px] min-[761px]:max-w-[400px] min-[761px]:text-xs">
                                                         {service.name}
                                                     </td>
-                                                    <td className="block min-w-0 min-[761px]:table-cell min-[761px]:border-b min-[761px]:border-[#f1f2f6] min-[761px]:px-[18px] min-[761px]:py-4 col-span-full wrap-anywhere min-[761px]:max-w-[200px]">
-                                                        <span className="price-category-label max-[761px]:wrap-anywhere inline-block py-1 px-2 rounded-[5px] text-[#82739c] bg-[#f3f0fa] text-[10px]">
+                                                    <td className="block min-w-0 min-[761px]:table-cell min-[761px]:border-b min-[761px]:border-[var(--tone-border-f1f2f6)] min-[761px]:px-[18px] min-[761px]:py-4 col-span-full wrap-anywhere min-[761px]:max-w-[200px]">
+                                                        <span className="price-category-label max-[761px]:wrap-anywhere inline-block py-1 px-2 rounded-[5px] text-[var(--tone-text-82739c)] bg-[var(--tone-bg-f3f0fa)] text-[10px]">
                                                             {categoryNames.get(
                                                                 service.category_id,
                                                             ) ?? 'Без категорії'}
                                                         </span>
                                                     </td>
-                                                    <td className="block min-w-0 min-[761px]:table-cell min-[761px]:border-b min-[761px]:border-[#f1f2f6] min-[761px]:px-[18px] min-[761px]:py-4 col-start-1 self-end text-subtle min-[761px]:whitespace-nowrap min-[761px]:text-ink">
+                                                    <td className="block min-w-0 min-[761px]:table-cell min-[761px]:border-b min-[761px]:border-[var(--tone-border-f1f2f6)] min-[761px]:px-[18px] min-[761px]:py-4 col-start-1 self-end text-subtle min-[761px]:whitespace-nowrap min-[761px]:text-ink">
                                                         {serviceUnits[service.unit]}
                                                     </td>
-                                                    <td className="block min-w-0 min-[761px]:table-cell min-[761px]:border-b min-[761px]:border-[#f1f2f6] min-[761px]:px-[18px] min-[761px]:py-4 col-start-1 text-base font-semibold wrap-anywhere tabular-nums min-[761px]:text-right min-[761px]:text-xs min-[761px]:font-normal min-[761px]:whitespace-nowrap">
+                                                    <td className="block min-w-0 min-[761px]:table-cell min-[761px]:border-b min-[761px]:border-[var(--tone-border-f1f2f6)] min-[761px]:px-[18px] min-[761px]:py-4 col-start-1 text-base font-semibold wrap-anywhere tabular-nums min-[761px]:text-right min-[761px]:text-xs min-[761px]:font-normal min-[761px]:whitespace-nowrap">
                                                         {formatPrice(service.price)}
                                                     </td>
-                                                    <td className="block min-w-0 min-[761px]:table-cell min-[761px]:border-b min-[761px]:border-[#f1f2f6] min-[761px]:px-[18px] min-[761px]:py-4 col-start-2 row-start-3 row-end-5 self-center max-[761px]:[&_button]:size-11">
+                                                    <td className="block min-w-0 min-[761px]:table-cell min-[761px]:border-b min-[761px]:border-[var(--tone-border-f1f2f6)] min-[761px]:px-[18px] min-[761px]:py-4 col-start-2 row-start-3 row-end-5 self-center max-[761px]:[&_button]:size-11">
                                                         <div className="price-row-actions flex justify-end">
                                                             <button
-                                                                className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[#f1f1f8]"
+                                                                className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[var(--tone-bg-f1f1f8)]"
                                                                 disabled={busy}
                                                                 onClick={() => openService(service)}
                                                                 aria-label={`Редагувати ${service.name}`}
@@ -817,7 +817,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                                                 <Pencil size={15} />
                                                             </button>
                                                             <button
-                                                                className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[#f1f1f8]"
+                                                                className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[var(--tone-bg-f1f1f8)]"
                                                                 disabled={busy}
                                                                 onClick={() =>
                                                                     void deleteService(service)
@@ -848,11 +848,11 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                         </Button>
                                     </div>
                                 )}
-                                <div className="list-footer border-t border-line py-[13px] px-6 text-[#989baa] text-[10px]">
+                                <div className="list-footer border-t border-line py-[13px] px-6 text-[var(--tone-text-989baa)] text-[10px]">
                                     Показано {visible.length} із {services.length} · ціни за одиницю
                                 </div>
                             </section>
-                            <section className="workspace-panel bg-[#fff] border border-line rounded-[14px] min-w-0 pdf-panel">
+                            <section className="workspace-panel bg-[var(--tone-bg-ffffff)] border border-line rounded-[14px] min-w-0 pdf-panel">
                                 <div className="panel-heading flex justify-between items-start gap-4 pt-[25px] px-6 pb-5 [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:tracking-[-.03em] [&_p]:text-subtle [&_p]:text-[11px] [&_p]:mt-[7px] max-[761px]:pt-[21px] max-[761px]:px-4.5 max-[761px]:pb-4.5">
                                     <div>
                                         <h2>
@@ -865,11 +865,11 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                         </p>
                                     </div>
                                 </div>
-                                <div className="pdf-options grid grid-cols-[1fr_1fr] gap-4.5 items-end pt-0 px-6 pb-5 [&_label]:text-[#55596c] [&_label]:text-[12px] [&_label]:min-w-0 [&_>_button]:justify-self-end max-[761px]:grid-cols-[1fr] max-[761px]:px-4.5 max-[761px]:[&_>_button]:justify-self-stretch">
+                                <div className="pdf-options grid grid-cols-[1fr_1fr] gap-4.5 items-end pt-0 px-6 pb-5 [&_label]:text-[var(--tone-text-55596c)] [&_label]:text-[12px] [&_label]:min-w-0 [&_>_button]:justify-self-end max-[761px]:grid-cols-[1fr] max-[761px]:px-4.5 max-[761px]:[&_>_button]:justify-self-stretch">
                                     <label>
                                         Ім’я майстра або компанія
                                         <input
-                                            className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                            className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                             value={pdfName}
                                             onChange={(event) => setPdfName(event.target.value)}
                                             maxLength={160}
@@ -877,11 +877,11 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                     </label>
                                     <label>
                                         Контакт для замовника{' '}
-                                        <span className="optional-label text-[10px] text-[#9295a4] font-normal ml-[5px]">
+                                        <span className="optional-label text-[10px] text-[var(--tone-text-9295a4)] font-normal ml-[5px]">
                                             необов’язково
                                         </span>
                                         <input
-                                            className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                            className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                             value={pdfContact}
                                             onChange={(event) => setPdfContact(event.target.value)}
                                             maxLength={160}
@@ -891,7 +891,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                     <label>
                                         Що включити в PDF
                                         <select
-                                            className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                            className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                             value={exportScope}
                                             onChange={(event) => setExportScope(event.target.value)}
                                         >

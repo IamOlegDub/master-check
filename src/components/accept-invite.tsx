@@ -41,12 +41,12 @@ export function AcceptInvite({ token }: { token: string }) {
             <button
                 disabled={busy}
                 onClick={() => void accept()}
-                className="rounded-xl bg-brand p-3 text-white disabled:opacity-50"
+                className="rounded-xl bg-[var(--brand-solid)] p-3 text-white disabled:opacity-50"
             >
                 {busy ? 'Підключаємо…' : 'Прийняти як замовник'}
             </button>
             {error && (
-                <p className="mt-4 text-red-700" role="alert">
+                <p className="mt-4 text-red-700 dark:text-red-300" role="alert">
                     {error}
                 </p>
             )}

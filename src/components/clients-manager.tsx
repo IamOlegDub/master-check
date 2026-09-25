@@ -130,7 +130,10 @@ export function ClientsManager({
             <BusyIndicator busy={busy} />
             <h1 className="text-3xl font-semibold">Клієнти</h1>
             {error && (
-                <p role="alert" className="rounded-xl bg-red-50 p-4 text-red-700">
+                <p
+                    role="alert"
+                    className="rounded-xl bg-red-50 dark:bg-red-950 p-4 text-red-700 dark:text-red-300"
+                >
                     {error}
                 </p>
             )}

@@ -47,7 +47,7 @@ export function AvatarEditor({
         >
             <Dialog.Portal>
                 <Dialog.Backdrop className="fixed inset-0 z-[250] bg-[#181526]/60" />
-                <Dialog.Popup className="avatar-editor fixed top-1/2 left-1/2 z-[251] flex max-h-[calc(100dvh-24px)] w-[min(460px,calc(100vw-24px))] -translate-x-1/2 -translate-y-1/2 flex-col overflow-y-auto rounded-2xl bg-white p-5">
+                <Dialog.Popup className="avatar-editor fixed top-1/2 left-1/2 z-[251] flex max-h-[calc(100dvh-24px)] w-[min(460px,calc(100vw-24px))] -translate-x-1/2 -translate-y-1/2 flex-col overflow-y-auto rounded-2xl bg-card p-5">
                     <Dialog.Title className="text-xl font-semibold">Налаштуйте фото</Dialog.Title>
                     <Dialog.Description className="mt-2 mb-4 text-xs leading-relaxed text-subtle">
                         Пересуньте фото й оберіть масштаб. Коло показує, як виглядатиме аватарка.
@@ -88,12 +88,12 @@ export function AvatarEditor({
                     {error && (
                         <p
                             role="alert"
-                            className="workspace-error rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[#a14752] bg-[#fcf0f1] border border-[#f1dce0]"
+                            className="workspace-error rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[var(--tone-text-a14752)] bg-[var(--tone-bg-fcf0f1)] border border-[var(--tone-border-f1dce0)]"
                         >
                             {error}
                         </p>
                     )}
-                    <div className="sticky bottom-0 mt-4 flex flex-wrap gap-2 bg-white pt-2">
+                    <div className="sticky bottom-0 mt-4 flex flex-wrap gap-2 bg-card pt-2">
                         <button
                             className={profileButton}
                             type="button"

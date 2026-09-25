@@ -62,8 +62,8 @@ export function WorkspaceShell({
     }
     return (
         <AccountContext.Provider value={updateAccount}>
-            <div className="min-h-dvh bg-[#f7f8fb] text-sm text-ink">
-                <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-line bg-white p-5 lg:flex">
+            <div className="min-h-dvh bg-[var(--tone-bg-f7f8fb)] text-sm text-ink">
+                <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-line bg-card p-5 lg:flex">
                     <Link href="/" className="mb-12 flex items-center gap-3 text-lg font-semibold">
                         <BrandLogo decorative className="size-9" />
                         Мій кошторис
@@ -83,7 +83,7 @@ export function WorkspaceShell({
                                         ? 'page'
                                         : undefined
                                 }
-                                className="flex min-h-11 items-center gap-3 rounded-xl p-3 hover:bg-[#f7f6fd] aria-[current=page]:bg-[#efedfc] aria-[current=page]:text-brand"
+                                className="flex min-h-11 items-center gap-3 rounded-xl p-3 hover:bg-[var(--tone-bg-f7f6fd)] aria-[current=page]:bg-[var(--tone-bg-efedfc)] aria-[current=page]:text-brand"
                             >
                                 <Icon size={20} />
                                 {label}
@@ -99,7 +99,7 @@ export function WorkspaceShell({
                     </Link>
                 </aside>
                 <main className="pb-[calc(96px+env(safe-area-inset-bottom))] lg:ml-60 lg:pb-6">
-                    <header className="flex min-h-16 items-center justify-between gap-3 border-b border-line bg-white px-4 sm:px-8">
+                    <header className="flex min-h-16 items-center justify-between gap-3 border-b border-line bg-card px-4 sm:px-8">
                         <nav
                             aria-label="Шлях навігації"
                             className="flex min-w-0 flex-wrap items-center gap-2 text-xs"
@@ -132,7 +132,10 @@ export function WorkspaceShell({
                         />
                     </header>
                     {error && (
-                        <p role="alert" className="m-4 rounded-xl bg-red-50 p-4 text-red-700">
+                        <p
+                            role="alert"
+                            className="m-4 rounded-xl bg-red-50 dark:bg-red-950 p-4 text-red-700 dark:text-red-300"
+                        >
                             {error}
                         </p>
                     )}
@@ -148,7 +151,7 @@ export function WorkspaceShell({
                 </main>
                 <nav
                     aria-label="Мобільна навігація"
-                    className={`fixed inset-x-0 bottom-0 z-40 grid ${role === 'MASTER' ? 'grid-cols-5' : 'grid-cols-2'} border-t border-line bg-white/95 px-1 pt-1 pb-[calc(6px+env(safe-area-inset-bottom))] backdrop-blur-lg lg:hidden`}
+                    className={`fixed inset-x-0 bottom-0 z-40 grid ${role === 'MASTER' ? 'grid-cols-5' : 'grid-cols-2'} border-t border-line bg-card/95 px-1 pt-1 pb-[calc(6px+env(safe-area-inset-bottom))] backdrop-blur-lg lg:hidden`}
                 >
                     {links.map(({ href, label, icon: Icon }) => (
                         <Link
@@ -161,7 +164,7 @@ export function WorkspaceShell({
                                     ? 'page'
                                     : undefined
                             }
-                            className="flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-[10px] text-subtle aria-[current=page]:bg-[#efedfc] aria-[current=page]:text-brand"
+                            className="flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-[10px] text-subtle aria-[current=page]:bg-[var(--tone-bg-efedfc)] aria-[current=page]:text-brand"
                         >
                             <Icon size={21} />
                             <span>{label}</span>

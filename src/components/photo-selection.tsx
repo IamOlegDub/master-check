@@ -30,7 +30,7 @@ export function PhotoSelection({
                         type="button"
                         onClick={() => onRemove(index)}
                         aria-label={`Прибрати ${file.name}`}
-                        className="absolute top-1 right-1 grid size-8 place-items-center rounded-full bg-white shadow"
+                        className="absolute top-1 right-1 grid size-8 place-items-center rounded-full bg-card shadow"
                     >
                         <X size={16} />
                     </button>

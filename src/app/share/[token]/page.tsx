@@ -24,7 +24,7 @@ export default async function Shared({ params }: { params: Promise<{ token: stri
     const albums = data as PublicAlbum[];
     if (!albums?.length) notFound();
     return (
-        <main className="min-h-dvh bg-[#f7f8fb] p-4 text-ink sm:p-8">
+        <main className="min-h-dvh bg-[var(--tone-bg-f7f8fb)] p-4 text-ink sm:p-8">
             <div className="mx-auto grid max-w-6xl gap-6">
                 <header>
                     <p className="flex items-center gap-3 text-sm text-brand">

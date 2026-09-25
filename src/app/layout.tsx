@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { PwaRegistration } from '@/components/pwa';
+import { ThemeProvider } from '@/components/theme-provider';
+import { themeScript } from '@/lib/theme';
 
 const inter = Inter({
     variable: '--font-inter',
@@ -28,10 +30,15 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
     return (
-        <html lang="uk" className={`${inter.variable} h-full antialiased`}>
+        <html lang="uk" suppressHydrationWarning className={`${inter.variable} h-full antialiased`}>
+            <head>
+                <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+            </head>
             <body className="min-h-full flex flex-col">
-                <PwaRegistration />
-                {children}
+                <ThemeProvider>
+                    <PwaRegistration />
+                    {children}
+                </ThemeProvider>
             </body>
         </html>
     );

@@ -24,13 +24,13 @@ export function ActionModal({
         >
             <Dialog.Portal>
                 <Dialog.Backdrop className="fixed inset-0 z-[100] bg-[#18132e]/45 backdrop-blur-sm" />
-                <Dialog.Popup className="fixed top-1/2 left-1/2 z-[101] max-h-[calc(100dvh-24px)] w-[calc(100%-24px)] max-w-2xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto overscroll-contain rounded-2xl bg-white text-ink shadow-2xl">
-                    <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-line bg-white p-5">
+                <Dialog.Popup className="fixed top-1/2 left-1/2 z-[101] max-h-[calc(100dvh-24px)] w-[calc(100%-24px)] max-w-2xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto overscroll-contain rounded-2xl bg-card text-ink shadow-2xl">
+                    <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-line bg-card p-5">
                         <Dialog.Title className="text-lg font-semibold">{title}</Dialog.Title>
                         <Dialog.Close
                             disabled={busy}
                             aria-label="Закрити вікно"
-                            className="flex size-10 shrink-0 items-center justify-center rounded-xl hover:bg-[#f0eef9] disabled:opacity-50"
+                            className="flex size-10 shrink-0 items-center justify-center rounded-xl hover:bg-[var(--tone-bg-f0eef9)] disabled:opacity-50"
                         >
                             <X size={20} />
                         </Dialog.Close>
@@ -38,7 +38,7 @@ export function ActionModal({
                     {error && (
                         <p
                             role="alert"
-                            className="m-5 rounded-xl bg-red-50 p-4 text-sm text-red-700"
+                            className="m-5 rounded-xl bg-red-50 dark:bg-red-950 p-4 text-sm text-red-700 dark:text-red-300"
                         >
                             {error}
                         </p>
@@ -77,7 +77,7 @@ export function ConfirmDialog({
                 </button>
                 <button
                     disabled={busy}
-                    className="rounded-xl bg-red-600 px-4 py-3 text-white disabled:opacity-50"
+                    className="rounded-xl bg-red-600 dark:bg-red-950 px-4 py-3 text-white disabled:opacity-50"
                     onClick={onConfirm}
                 >
                     {busy ? 'Видаляємо…' : 'Видалити'}

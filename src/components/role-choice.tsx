@@ -68,7 +68,7 @@ export function RoleChoice({ existingMaster = false }: { existingMaster?: boolea
                             e.preventDefault();
                             void choose('MASTER');
                         }}
-                        className="rounded-2xl border border-line bg-white p-6"
+                        className="rounded-2xl border border-line bg-card p-6"
                     >
                         <label className="font-semibold">
                             Ваш username
@@ -93,7 +93,7 @@ export function RoleChoice({ existingMaster = false }: { existingMaster?: boolea
                         </p>
                         <button
                             disabled={busy}
-                            className="rounded-xl bg-brand px-5 py-3 text-white disabled:opacity-50"
+                            className="rounded-xl bg-[var(--brand-solid)] px-5 py-3 text-white disabled:opacity-50"
                         >
                             {busy ? 'Зберігаємо…' : 'Продовжити'}
                         </button>
@@ -124,7 +124,7 @@ export function RoleChoice({ existingMaster = false }: { existingMaster?: boolea
                                 onClick={() =>
                                     role === 'MASTER' ? setMaster(true) : void choose(role)
                                 }
-                                className="rounded-2xl border border-line bg-white p-6 text-left hover:border-brand disabled:opacity-50"
+                                className="rounded-2xl border border-line bg-card p-6 text-left hover:border-brand disabled:opacity-50"
                             >
                                 <strong className="text-lg">{label}</strong>
                                 <span className="mt-2 block text-subtle">{hint}</span>
@@ -135,7 +135,7 @@ export function RoleChoice({ existingMaster = false }: { existingMaster?: boolea
             </div>
             <BusyIndicator busy={busy} label="Створюємо ваш робочий простір…" />
             {error && (
-                <p role="alert" className="mt-4 text-red-700">
+                <p role="alert" className="mt-4 text-red-700 dark:text-red-300">
                     {error}
                 </p>
             )}

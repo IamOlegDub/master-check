@@ -1,5 +1,6 @@
 ﻿'use client';
 import { InstallApp } from '@/components/pwa';
+import { ThemePicker } from '@/components/theme-provider';
 import { useState } from 'react';
 import { useWorkspaceAccount } from '@/components/workspace-shell';
 import { ProfileSettings } from '@/components/profile-settings';
@@ -26,7 +27,7 @@ export function SettingsWorkspace({
                 }}
             />
             {username && (
-                <section className="mt-6 rounded-2xl border border-line bg-white p-5">
+                <section className="mt-6 rounded-2xl border border-line bg-card p-5">
                     <h2 className="font-semibold">Адреса майстра</h2>
                     <p className="mt-2 text-brand">@{username}</p>
                     <p className="mt-2 text-xs text-subtle">
@@ -35,6 +36,9 @@ export function SettingsWorkspace({
                     </p>
                 </section>
             )}
+            <section className="mt-6 rounded-2xl border border-line bg-card p-5">
+                <ThemePicker />
+            </section>
             <InstallApp />
         </>
     );

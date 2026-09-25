@@ -7,7 +7,17 @@ import { safeReturnPath } from '@/lib/auth-redirect';
 export async function GET(request: Request) {
     const requestUrl = new URL(request.url);
     const code = requestUrl.searchParams.get('code');
-    const next = safeReturnPath(requestUrl.searchParams.get('next'));
+    const savedNext = request.headers
+        .get('cookie')
+        ?.split(';')
+        .map((v) => v.trim())
+        .find((v) => v.startsWith('mc-auth-next='))
+        ?.slice('mc-auth-next='.length);
+    let cookieNext = '/';
+    try {
+        cookieNext = decodeURIComponent(savedNext ?? '/');
+    } catch {}
+    const next = safeReturnPath(requestUrl.searchParams.get('next') ?? cookieNext);
     const env = getSupabaseEnv();
 
     if (!code || !env) {
@@ -15,6 +25,7 @@ export async function GET(request: Request) {
     }
 
     const response = NextResponse.redirect(new URL(next, requestUrl.origin));
+    response.cookies.set('mc-auth-next', '', { path: '/auth/callback', maxAge: 0 });
     const supabase = createServerClient(env.url, env.key, {
         cookies: {
             getAll() {

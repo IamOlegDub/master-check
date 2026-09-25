@@ -186,7 +186,7 @@ export function ProfileSettings({
     return (
         <section className="profile-settings grid grid-cols-1 items-start gap-5 min-[761px]:grid-cols-[minmax(220px,300px)_minmax(0,1fr)] min-[761px]:gap-6">
             <BusyIndicator busy={busy} />
-            <aside className="profile-photo-panel -mx-[18px] min-w-0 overflow-hidden rounded-none border border-t-0 border-line bg-white min-[761px]:mx-0 min-[761px]:rounded-2xl min-[761px]:border-t">
+            <aside className="profile-photo-panel -mx-[18px] min-w-0 overflow-hidden rounded-none border border-t-0 border-line bg-card min-[761px]:mx-0 min-[761px]:rounded-2xl min-[761px]:border-t">
                 {avatar ? (
                     <img
                         className="profile-photo block h-[33svh] w-full object-cover min-[761px]:mx-auto min-[761px]:mt-7 min-[761px]:size-[180px] min-[761px]:rounded-full"
@@ -285,7 +285,7 @@ export function ProfileSettings({
                     {messageTarget === 'photo' && notice && (
                         <p
                             role="status"
-                            className="workspace-notice rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[#34755c] bg-[#edf7f1] border border-[#d7eddf] mt-3"
+                            className="workspace-notice rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[var(--tone-text-34755c)] bg-[var(--tone-bg-edf7f1)] border border-[var(--tone-border-d7eddf)] mt-3"
                         >
                             {notice}
                         </p>
@@ -293,7 +293,7 @@ export function ProfileSettings({
                     {messageTarget === 'photo' && error && (
                         <p
                             role="alert"
-                            className="workspace-error rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[#a14752] bg-[#fcf0f1] border border-[#f1dce0] mt-3"
+                            className="workspace-error rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[var(--tone-text-a14752)] bg-[var(--tone-bg-fcf0f1)] border border-[var(--tone-border-f1dce0)] mt-3"
                         >
                             {error}
                         </p>
@@ -302,10 +302,10 @@ export function ProfileSettings({
             </aside>
             <form
                 onSubmit={(event) => void save(event)}
-                className="profile-form grid min-w-0 gap-6 rounded-2xl border border-line bg-white px-[18px] py-6 min-[761px]:p-7"
+                className="profile-form grid min-w-0 gap-6 rounded-2xl border border-line bg-card px-[18px] py-6 min-[761px]:p-7"
             >
                 <div>
-                    <span className="eyebrow block text-[#89859e] text-[9px] font-semibold tracking-[.13em]">
+                    <span className="eyebrow block text-[var(--tone-text-89859e)] text-[9px] font-semibold tracking-[.13em]">
                         ОСОБИСТИЙ ПРОФІЛЬ
                     </span>
                     <h1 className="mt-2 text-[28px] font-semibold tracking-tight">Налаштування</h1>
@@ -314,7 +314,7 @@ export function ProfileSettings({
                 {messageTarget === 'profile' && notice && (
                     <p
                         role="status"
-                        className="workspace-notice rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[#34755c] bg-[#edf7f1] border border-[#d7eddf]"
+                        className="workspace-notice rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[var(--tone-text-34755c)] bg-[var(--tone-bg-edf7f1)] border border-[var(--tone-border-d7eddf)]"
                     >
                         {notice}
                     </p>
@@ -322,20 +322,20 @@ export function ProfileSettings({
                 {messageTarget === 'profile' && error && (
                     <p
                         role="alert"
-                        className="workspace-error rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[#a14752] bg-[#fcf0f1] border border-[#f1dce0]"
+                        className="workspace-error rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[var(--tone-text-a14752)] bg-[var(--tone-bg-fcf0f1)] border border-[var(--tone-border-f1dce0)]"
                     >
                         {error}
                     </p>
                 )}
                 {profile.pendingEmail && (
-                    <p className="workspace-notice rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[#34755c] bg-[#edf7f1] border border-[#d7eddf]">
+                    <p className="workspace-notice rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[var(--tone-text-34755c)] bg-[var(--tone-bg-edf7f1)] border border-[var(--tone-border-d7eddf)]">
                         Очікує підтвердження: {profile.pendingEmail}. Поточна пошта —{' '}
                         {profile.email}.
                     </p>
                 )}
                 <fieldset
                     disabled={busy}
-                    className="grid min-w-0 grid-cols-1 gap-5 text-xs text-[#55596c] min-[761px]:grid-cols-2 [&>label]:min-w-0"
+                    className="grid min-w-0 grid-cols-1 gap-5 text-xs text-[var(--tone-text-55596c)] min-[761px]:grid-cols-2 [&>label]:min-w-0"
                 >
                     <label>
                         Ім’я <span className="text-brand">*</span>

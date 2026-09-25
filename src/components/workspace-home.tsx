@@ -130,13 +130,13 @@ export function WorkspaceHome({
                         <div className="flex flex-wrap gap-3">
                             <Link
                                 href="/portfolio"
-                                className="rounded-xl border border-line bg-white p-3"
+                                className="rounded-xl border border-line bg-card p-3"
                             >
                                 Додати фото в портфоліо
                             </Link>
                             <Link
                                 href="/services"
-                                className="rounded-xl border border-line bg-white p-3"
+                                className="rounded-xl border border-line bg-card p-3"
                             >
                                 Поділитися прайсом / PDF
                             </Link>
@@ -145,7 +145,10 @@ export function WorkspaceHome({
                 </>
             )}
             {error && (
-                <p role="alert" className="rounded-xl bg-red-50 p-4 text-red-700">
+                <p
+                    role="alert"
+                    className="rounded-xl bg-red-50 dark:bg-red-950 p-4 text-red-700 dark:text-red-300"
+                >
                     {error}
                 </p>
             )}
@@ -168,7 +171,10 @@ export function WorkspaceHome({
                                 /{username || 'username'}/{projectSlug(name) || 'nazva-proiektu'}
                             </span>
                             {duplicate && (
-                                <span role="status" className="mt-2 block text-xs text-red-700">
+                                <span
+                                    role="status"
+                                    className="mt-2 block text-xs text-red-700 dark:text-red-300"
+                                >
                                     Проєкт із такою адресою вже є. Уточніть назву.
                                 </span>
                             )}
@@ -233,7 +239,7 @@ export function WorkspaceHome({
                             href={projectHref(p)}
                             className={`${panelClass} block transition hover:border-brand`}
                         >
-                            <span className="rounded-lg bg-[#efedfc] px-2 py-1 text-xs text-brand">
+                            <span className="rounded-lg bg-[var(--tone-bg-efedfc)] px-2 py-1 text-xs text-brand">
                                 {statusLabels[p.status]}
                             </span>
                             <h2 className="my-3 text-xl font-semibold wrap-anywhere">{p.name}</h2>

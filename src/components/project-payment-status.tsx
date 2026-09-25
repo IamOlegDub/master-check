@@ -19,7 +19,7 @@ export function ProjectPaymentStatus({ confirmed, paid }: { confirmed: number; p
                 : 'Ще немає підтверджених робіт';
     return (
         <div
-            className={`mt-4 rounded-xl p-3 ${due > 0 ? 'bg-amber-50 text-amber-900' : confirmed > 0 ? 'bg-emerald-50 text-emerald-800' : 'bg-slate-50 text-slate-600'}`}
+            className={`mt-4 rounded-xl p-3 ${due > 0 ? 'bg-amber-50 dark:bg-amber-950 text-amber-900 dark:text-amber-300' : confirmed > 0 ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300' : 'bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-300'}`}
         >
             <p className="flex items-center gap-2 text-sm font-medium">
                 <Icon size={18} aria-hidden className="shrink-0" />

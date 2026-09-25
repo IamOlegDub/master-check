@@ -16,6 +16,8 @@ UI styles: [Tailwind component guide](docs/STYLING.md). Format components with `
 4. Apply the SQL migrations in `supabase/migrations` in order. See [supabase/README.md](supabase/README.md) for details.
 5. Run `pnpm dev` and open `http://localhost:3000`.
 
+If local Google sign-in returns to the deployed site, follow [Local auth setup](docs/LOCAL_AUTH.md). Appearance (light, dark, system) is available on the login screen and in profile settings; the preference is saved in this browser.
+
 ## Features
 
 - Google sign-in and access to each user's own data through Supabase RLS.
@@ -57,6 +59,8 @@ To deploy, add the variables from `.env.example` to your hosting settings and al
 3. Налаштуйте Google Auth у Supabase. Додайте `http://localhost:3000/auth/callback` до дозволених Redirect URLs.
 4. Застосуйте SQL-міграції з `supabase/migrations` за порядком. Деталі — [supabase/README.md](supabase/README.md).
 5. Запустіть `pnpm dev` та відкрийте `http://localhost:3000`.
+
+Якщо Google-вхід із localhost повертає на деплой, дивіться [налаштування локального входу](docs/LOCAL_AUTH.md). Світла, темна та системна теми доступні на сторінці входу й у налаштуваннях профілю; вибір зберігається в цьому браузері.
 
 ## Можливості
 

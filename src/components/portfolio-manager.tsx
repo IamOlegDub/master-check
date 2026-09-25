@@ -203,7 +203,10 @@ export function PortfolioManager({
                 2048 px без обрізання.
             </p>
             {error && (
-                <p role="alert" className="rounded-xl bg-red-50 p-4 text-red-700">
+                <p
+                    role="alert"
+                    className="rounded-xl bg-red-50 dark:bg-red-950 p-4 text-red-700 dark:text-red-300"
+                >
                     {error}
                 </p>
             )}
@@ -286,7 +289,7 @@ export function PortfolioManager({
                                     type="button"
                                     key={id}
                                     onClick={() => setSelected((s) => s.filter((x) => x !== id))}
-                                    className="rounded-lg bg-[#efedfc] p-2 text-brand"
+                                    className="rounded-lg bg-[var(--tone-bg-efedfc)] p-2 text-brand"
                                 >
                                     {categories.find((c) => c.id === id)?.name} ×
                                 </button>
@@ -385,7 +388,7 @@ export function PortfolioManager({
                             <button
                                 disabled={busy}
                                 onClick={() => setDeleting({ album, all: true })}
-                                className="mt-4 flex items-center gap-2 text-xs text-red-700"
+                                className="mt-4 flex items-center gap-2 text-xs text-red-700 dark:text-red-300"
                             >
                                 <Trash2 size={16} />
                                 Видалити всі фото

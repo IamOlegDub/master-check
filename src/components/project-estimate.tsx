@@ -316,7 +316,7 @@ export function ProjectEstimate({
                 <div>
                     <span
                         hidden={workflowMode}
-                        className="eyebrow block text-[#89859e] text-[9px] font-semibold tracking-[.13em]"
+                        className="eyebrow block text-[var(--tone-text-89859e)] text-[9px] font-semibold tracking-[.13em]"
                     >
                         {view === 'payments' ? 'ОПЛАТИ ТА АВАНСИ' : 'ПЛАН РОБІТ'}
                     </span>
@@ -352,7 +352,7 @@ export function ProjectEstimate({
             {error && (
                 <div
                     role="alert"
-                    className="workspace-error rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[#a14752] bg-[#fcf0f1] border border-[#f1dce0]"
+                    className="workspace-error rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[var(--tone-text-a14752)] bg-[var(--tone-bg-fcf0f1)] border border-[var(--tone-border-f1dce0)]"
                 >
                     <p>{error}</p>
                     {needsRetry && (
@@ -370,7 +370,7 @@ export function ProjectEstimate({
             {notice && (
                 <p
                     role="status"
-                    className="workspace-notice rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[#34755c] bg-[#edf7f1] border border-[#d7eddf]"
+                    className="workspace-notice rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[var(--tone-text-34755c)] bg-[var(--tone-bg-edf7f1)] border border-[var(--tone-border-d7eddf)]"
                 >
                     {notice}
                 </p>
@@ -378,15 +378,15 @@ export function ProjectEstimate({
             {loading ? (
                 <div role="status" className="grid gap-3 motion-safe:animate-pulse">
                     <span className="sr-only">Завантажуємо кошторис…</span>
-                    <div className="h-24 rounded-2xl bg-[#eae8f3]" />
-                    <div className="h-48 rounded-2xl bg-[#eae8f3]" />
+                    <div className="h-24 rounded-2xl bg-[var(--tone-bg-eae8f3)]" />
+                    <div className="h-48 rounded-2xl bg-[var(--tone-bg-eae8f3)]" />
                 </div>
             ) : (
                 detail && (
                     <>
                         <div
                             hidden={view !== 'payments'}
-                            className="estimate-summary grid grid-cols-2 gap-3 [&_>_div]:bg-[#fff] [&_>_div]:border [&_>_div]:border-line [&_>_div]:rounded-[12px] [&_>_div]:p-4.5 [&_>_div]:min-w-0 [&_span]:block [&_span]:text-[11px] [&_span]:text-subtle [&_strong]:block [&_strong]:text-[20px] [&_strong]:mt-2.5 [&_strong]:font-[550] [&_strong]:tabular-nums [&_strong]:wrap-anywhere max-[901px]:grid-cols-2 max-[601px]:[&_strong]:text-[17px]"
+                            className="estimate-summary grid grid-cols-2 gap-3 [&_>_div]:bg-[var(--tone-bg-ffffff)] [&_>_div]:border [&_>_div]:border-line [&_>_div]:rounded-[12px] [&_>_div]:p-4.5 [&_>_div]:min-w-0 [&_span]:block [&_span]:text-[11px] [&_span]:text-subtle [&_strong]:block [&_strong]:text-[20px] [&_strong]:mt-2.5 [&_strong]:font-[550] [&_strong]:tabular-nums [&_strong]:wrap-anywhere max-[901px]:grid-cols-2 max-[601px]:[&_strong]:text-[17px]"
                         >
                             {[
                                 ['Кошторис', detail.project.total],
@@ -403,7 +403,7 @@ export function ProjectEstimate({
                                 ))}
                         </div>
                         {view === 'payments' && balance.overpaid > 0 && (
-                            <p className="workspace-notice rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[#34755c] bg-[#edf7f1] border border-[#d7eddf]">
+                            <p className="workspace-notice rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[var(--tone-text-34755c)] bg-[var(--tone-bg-edf7f1)] border border-[var(--tone-border-d7eddf)]">
                                 Кредит замовника: {formatPrice(balance.overpaid)}. Отримані кошти
                                 перевищують поточний кошторис; їх можна врахувати для наступних
                                 робіт.
@@ -423,7 +423,7 @@ export function ProjectEstimate({
                                     Статус проєкту
                                     <select
                                         aria-label="Статус проєкту"
-                                        className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                        className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                         value={detail.project.status}
                                         disabled={disabled}
                                         onChange={(event) =>
@@ -460,7 +460,7 @@ export function ProjectEstimate({
                         {catalogueError && (
                             <p
                                 role="alert"
-                                className="workspace-error rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[#a14752] bg-[#fcf0f1] border border-[#f1dce0]"
+                                className="workspace-error rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[var(--tone-text-a14752)] bg-[var(--tone-bg-fcf0f1)] border border-[var(--tone-border-f1dce0)]"
                             >
                                 {catalogueError}
                             </p>
@@ -472,7 +472,7 @@ export function ProjectEstimate({
                                 busy={busy}
                                 error={error}
                             >
-                                <section className="workspace-panel bg-[#fff] border border-line rounded-[14px] min-w-0 project-form-panel border-[#ddd7f5]! shadow-[0_5px_20px_#6155db06] [&_.eyebrow]:mb-[7px] [&_.workspace-error]:mt-0 [&_.workspace-error]:mx-6 [&_.workspace-error]:mb-5">
+                                <section className="workspace-panel bg-[var(--tone-bg-ffffff)] border border-line rounded-[14px] min-w-0 project-form-panel border-[var(--tone-border-ddd7f5)]! shadow-[0_5px_20px_#6155db06] [&_.eyebrow]:mb-[7px] [&_.workspace-error]:mt-0 [&_.workspace-error]:mx-6 [&_.workspace-error]:mb-5">
                                     <div className="panel-heading flex justify-between items-start gap-4 pt-[25px] px-6 pb-5 [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:tracking-[-.03em] [&_p]:text-subtle [&_p]:text-[11px] [&_p]:mt-[7px] max-[761px]:pt-[21px] max-[761px]:px-4.5 max-[761px]:pb-4.5">
                                         <div>
                                             <h2>
@@ -492,7 +492,10 @@ export function ProjectEstimate({
                                                 <p role="status">Оновлюємо прайс…</p>
                                             )}
                                             {catalogueError && (
-                                                <p role="alert" className="text-red-700">
+                                                <p
+                                                    role="alert"
+                                                    className="text-red-700 dark:text-red-300"
+                                                >
                                                     {catalogueError}
                                                 </p>
                                             )}
@@ -520,7 +523,7 @@ export function ProjectEstimate({
                                     ) : (
                                         <form onSubmit={saveItem}>
                                             <fieldset
-                                                className="project-form-fields grid grid-cols-[1fr_1fr] gap-5 pt-1 px-6 pb-6 [&_label]:text-[#55596c] [&_label]:text-[12px] [&_label]:font-medium [&_label]:min-w-0 max-[761px]:grid-cols-[1fr] max-[761px]:px-4.5 max-[761px]:gap-[17px]"
+                                                className="project-form-fields grid grid-cols-[1fr_1fr] gap-5 pt-1 px-6 pb-6 [&_label]:text-[var(--tone-text-55596c)] [&_label]:text-[12px] [&_label]:font-medium [&_label]:min-w-0 max-[761px]:grid-cols-[1fr] max-[761px]:px-4.5 max-[761px]:gap-[17px]"
                                                 disabled={disabled}
                                             >
                                                 {!editing && (
@@ -528,7 +531,7 @@ export function ProjectEstimate({
                                                         <label>
                                                             Пошук у прайсі
                                                             <input
-                                                                className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                                className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                                                 value={search}
                                                                 onChange={(event) =>
                                                                     setSearch(event.target.value)
@@ -539,7 +542,7 @@ export function ProjectEstimate({
                                                         <label>
                                                             Категорія
                                                             <select
-                                                                className="mt-2 block min-h-11 w-full rounded-lg border border-line bg-white px-3"
+                                                                className="mt-2 block min-h-11 w-full rounded-lg border border-line bg-card px-3"
                                                                 value={categoryId}
                                                                 onChange={(e) => {
                                                                     setCategoryId(e.target.value);
@@ -579,7 +582,7 @@ export function ProjectEstimate({
                                                         <label className="sm:col-span-2">
                                                             Послуга
                                                             <select
-                                                                className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                                className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                                                 required
                                                                 value={serviceId}
                                                                 onChange={(event) =>
@@ -612,7 +615,7 @@ export function ProjectEstimate({
                                                         ? `(${serviceUnits[(editing ?? selectedService)!.unit]})`
                                                         : ''}
                                                     <input
-                                                        className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                        className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                                         type="number"
                                                         min="0.001"
                                                         max="999999999.999"
@@ -627,11 +630,11 @@ export function ProjectEstimate({
                                                 <label>
                                                     Ціна за одиницю, ₴
                                                     <input
-                                                        className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                        className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                                         type="number"
                                                         min="0"
-                                                        max="9999999999.99"
-                                                        step="0.01"
+                                                        max="9999999999"
+                                                        step="1"
                                                         readOnly={!editing}
                                                         value={
                                                             editing
@@ -647,7 +650,7 @@ export function ProjectEstimate({
                                                 <label>
                                                     Знижка / націнка, %
                                                     <input
-                                                        className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                        className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                                         type="number"
                                                         min="-100"
                                                         max="1000"
@@ -665,7 +668,7 @@ export function ProjectEstimate({
                                                 <label>
                                                     Примітка
                                                     <input
-                                                        className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                        className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                                         value={note}
                                                         onChange={(event) =>
                                                             setNote(event.target.value)
@@ -675,7 +678,7 @@ export function ProjectEstimate({
                                                     />
                                                 </label>
                                             </fieldset>
-                                            <div className="estimate-preview flex justify-between items-center gap-3 py-5 px-6 text-[13px] bg-[#f5f3fd] [&_strong]:text-[20px] [&_strong]:font-[550]">
+                                            <div className="estimate-preview flex justify-between items-center gap-3 py-5 px-6 text-[13px] bg-[var(--tone-bg-f5f3fd)] [&_strong]:text-[20px] [&_strong]:font-[550]">
                                                 Сума пункту{' '}
                                                 <strong>
                                                     {preview === null
@@ -726,7 +729,7 @@ export function ProjectEstimate({
                                 busy={busy}
                                 error={error}
                             >
-                                <section className="workspace-panel bg-[#fff] border border-line rounded-[14px] min-w-0 project-form-panel border-[#ddd7f5]! shadow-[0_5px_20px_#6155db06] [&_.eyebrow]:mb-[7px] [&_.workspace-error]:mt-0 [&_.workspace-error]:mx-6 [&_.workspace-error]:mb-5">
+                                <section className="workspace-panel bg-[var(--tone-bg-ffffff)] border border-line rounded-[14px] min-w-0 project-form-panel border-[var(--tone-border-ddd7f5)]! shadow-[0_5px_20px_#6155db06] [&_.eyebrow]:mb-[7px] [&_.workspace-error]:mt-0 [&_.workspace-error]:mx-6 [&_.workspace-error]:mb-5">
                                     <div className="panel-heading flex justify-between items-start gap-4 pt-[25px] px-6 pb-5 [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:tracking-[-.03em] [&_p]:text-subtle [&_p]:text-[11px] [&_p]:mt-[7px] max-[761px]:pt-[21px] max-[761px]:px-4.5 max-[761px]:pb-4.5">
                                         <div>
                                             <h2>
@@ -752,7 +755,7 @@ export function ProjectEstimate({
                                     </div>
                                     <form onSubmit={saveAction}>
                                         <fieldset
-                                            className="project-form-fields grid grid-cols-[1fr_1fr] gap-5 pt-1 px-6 pb-6 [&_label]:text-[#55596c] [&_label]:text-[12px] [&_label]:font-medium [&_label]:min-w-0 max-[761px]:grid-cols-[1fr] max-[761px]:px-4.5 max-[761px]:gap-[17px]"
+                                            className="project-form-fields grid grid-cols-[1fr_1fr] gap-5 pt-1 px-6 pb-6 [&_label]:text-[var(--tone-text-55596c)] [&_label]:text-[12px] [&_label]:font-medium [&_label]:min-w-0 max-[761px]:grid-cols-[1fr] max-[761px]:px-4.5 max-[761px]:gap-[17px]"
                                             disabled={disabled}
                                         >
                                             {(action.kind === 'payment' ||
@@ -760,7 +763,7 @@ export function ProjectEstimate({
                                                 <label>
                                                     Сума, ₴
                                                     <input
-                                                        className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                        className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                                         type="number"
                                                         min="0.01"
                                                         step="0.01"
@@ -795,7 +798,7 @@ export function ProjectEstimate({
                                             <label>
                                                 Дата й час події
                                                 <input
-                                                    className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                    className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                                     type="datetime-local"
                                                     value={date}
                                                     onChange={(event) =>
@@ -810,7 +813,7 @@ export function ProjectEstimate({
                                                     ? 'Причина скасування'
                                                     : 'Примітка'}
                                                 <input
-                                                    className="workspace-input block w-full border border-[#e2e4ed] rounded-[8px] bg-[#fcfcfe] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[#a1a4b0] [&:focus]:border-[#9b8ee1] [&:focus]:bg-[#fff] max-[761px]:text-[16px]"
+                                                    className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                                     value={actionNote}
                                                     onChange={(event) =>
                                                         setActionNote(event.target.value)
@@ -828,7 +831,7 @@ export function ProjectEstimate({
                                                     авансу. Якщо це вже отримані кошти,{' '}
                                                     <button
                                                         type="button"
-                                                        className="estimate-text-button underline text-[#6155db]"
+                                                        className="estimate-text-button underline text-[var(--tone-text-6155db)]"
                                                         onClick={() =>
                                                             openAction({
                                                                 kind: 'allocate',
@@ -884,12 +887,12 @@ export function ProjectEstimate({
                                 )}
                             </ActionModal>
                         )}
-                        <div className="workspace-panel bg-[#fff] border border-line rounded-[14px] min-w-0">
+                        <div className="workspace-panel bg-[var(--tone-bg-ffffff)] border border-line rounded-[14px] min-w-0">
                             <div className="panel-heading flex justify-between items-start gap-4 pt-[25px] px-6 pb-5 [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:tracking-[-.03em] [&_p]:text-subtle [&_p]:text-[11px] [&_p]:mt-[7px] max-[761px]:pt-[21px] max-[761px]:px-4.5 max-[761px]:pb-4.5">
                                 <div>
                                     <h2>
                                         Роботи{' '}
-                                        <span className="count-badge inline-flex py-[1px] px-[7px] bg-[#f2f1f8] text-[#817793] rounded-[5px] text-[10px]">
+                                        <span className="count-badge inline-flex py-[1px] px-[7px] bg-[var(--tone-bg-f2f1f8)] text-[var(--tone-text-817793)] rounded-[5px] text-[10px]">
                                             {detail.items.length}
                                         </span>
                                     </h2>
@@ -937,7 +940,7 @@ export function ProjectEstimate({
                                                         className="price-row-actions flex justify-end"
                                                     >
                                                         <button
-                                                            className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[#f1f1f8]"
+                                                            className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[var(--tone-bg-f1f1f8)]"
                                                             disabled={disabled || estimateLocked}
                                                             aria-label={`Редагувати ${item.name}`}
                                                             onClick={() => openItem(item)}
@@ -945,7 +948,7 @@ export function ProjectEstimate({
                                                             <Pencil size={16} />
                                                         </button>
                                                         <button
-                                                            className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[#f1f1f8]"
+                                                            className="icon-button inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-subtle shrink-0 [&:hover]:bg-[var(--tone-bg-f1f1f8)]"
                                                             disabled={
                                                                 disabled ||
                                                                 estimateLocked ||
@@ -972,7 +975,7 @@ export function ProjectEstimate({
                                                         </button>
                                                     </div>
                                                 </div>
-                                                <div className="estimate-calculation flex justify-between flex-wrap gap-2.5 my-[15px] tabular-nums text-[13px] [&_em]:inline-block [&_em]:not-italic [&_em]:ml-2.5 [&_em]:py-[3px] [&_em]:px-[7px] [&_em]:bg-[#f0edfc] [&_em]:rounded-[5px] [&_em]:text-[#7160b6] [&_em]:text-[11px] [&_strong]:text-[19px] [&_strong]:font-[550]">
+                                                <div className="estimate-calculation flex justify-between flex-wrap gap-2.5 my-[15px] tabular-nums text-[13px] [&_em]:inline-block [&_em]:not-italic [&_em]:ml-2.5 [&_em]:py-[3px] [&_em]:px-[7px] [&_em]:bg-[var(--tone-bg-f0edfc)] [&_em]:rounded-[5px] [&_em]:text-[var(--tone-text-7160b6)] [&_em]:text-[11px] [&_strong]:text-[19px] [&_strong]:font-[550]">
                                                     <span>
                                                         {item.quantity} {serviceUnits[item.unit]} ×{' '}
                                                         {formatPrice(Number(item.unit_price))}
@@ -1001,7 +1004,7 @@ export function ProjectEstimate({
                                                             <button
                                                                 role="checkbox"
                                                                 aria-checked={!!item.completed_at}
-                                                                className="estimate-check inline-flex gap-[7px] items-center text-[11px] [&_>_span]:w-[19px] [&_>_span]:h-[19px] [&_>_span]:border [&_>_span]:border-[#c8c3d9] [&_>_span]:rounded-[5px] [&_>_span]:inline-flex [&_>_span]:items-center [&_>_span]:justify-center [&[aria-checked=true]_>_span]:bg-[#6155db] [&[aria-checked=true]_>_span]:border-[#6155db] [&[aria-checked=true]_>_span]:text-[white] [&[aria-checked=mixed]_>_span]:bg-[#6155db] [&[aria-checked=mixed]_>_span]:border-[#6155db] [&[aria-checked=mixed]_>_span]:text-[white]"
+                                                                className="estimate-check inline-flex gap-[7px] items-center text-[11px] [&_>_span]:w-[19px] [&_>_span]:h-[19px] [&_>_span]:border [&_>_span]:border-[var(--tone-border-c8c3d9)] [&_>_span]:rounded-[5px] [&_>_span]:inline-flex [&_>_span]:items-center [&_>_span]:justify-center [&[aria-checked=true]_>_span]:bg-[#6155db] [&[aria-checked=true]_>_span]:border-[var(--tone-border-6155db)] [&[aria-checked=true]_>_span]:text-[white] [&[aria-checked=mixed]_>_span]:bg-[#6155db] [&[aria-checked=mixed]_>_span]:border-[var(--tone-border-6155db)] [&[aria-checked=mixed]_>_span]:text-[white]"
                                                                 disabled={disabled}
                                                                 onClick={() =>
                                                                     openAction({
@@ -1033,7 +1036,7 @@ export function ProjectEstimate({
                                                                   ? 'mixed'
                                                                   : false
                                                         }
-                                                        className="estimate-check inline-flex gap-[7px] items-center text-[11px] [&_>_span]:w-[19px] [&_>_span]:h-[19px] [&_>_span]:border [&_>_span]:border-[#c8c3d9] [&_>_span]:rounded-[5px] [&_>_span]:inline-flex [&_>_span]:items-center [&_>_span]:justify-center [&[aria-checked=true]_>_span]:bg-[#6155db] [&[aria-checked=true]_>_span]:border-[#6155db] [&[aria-checked=true]_>_span]:text-[white] [&[aria-checked=mixed]_>_span]:bg-[#6155db] [&[aria-checked=mixed]_>_span]:border-[#6155db] [&[aria-checked=mixed]_>_span]:text-[white]"
+                                                        className="estimate-check inline-flex gap-[7px] items-center text-[11px] [&_>_span]:w-[19px] [&_>_span]:h-[19px] [&_>_span]:border [&_>_span]:border-[var(--tone-border-c8c3d9)] [&_>_span]:rounded-[5px] [&_>_span]:inline-flex [&_>_span]:items-center [&_>_span]:justify-center [&[aria-checked=true]_>_span]:bg-[#6155db] [&[aria-checked=true]_>_span]:border-[var(--tone-border-6155db)] [&[aria-checked=true]_>_span]:text-[white] [&[aria-checked=mixed]_>_span]:bg-[#6155db] [&[aria-checked=mixed]_>_span]:border-[var(--tone-border-6155db)] [&[aria-checked=mixed]_>_span]:text-[white]"
                                                         disabled={disabled || isPaid}
                                                         onClick={() =>
                                                             openAction({
@@ -1123,14 +1126,14 @@ export function ProjectEstimate({
                                     })}
                                 </div>
                             )}
-                            <div className="estimate-total flex justify-between items-center gap-3 py-5 px-6 text-[13px] bg-[#f5f3fd] rounded-[0_0_14px_14px] [&_strong]:text-[20px] [&_strong]:font-[550] max-[601px]:[&_strong]:text-[17px]">
+                            <div className="estimate-total flex justify-between items-center gap-3 py-5 px-6 text-[13px] bg-[var(--tone-bg-f5f3fd)] rounded-[0_0_14px_14px] [&_strong]:text-[20px] [&_strong]:font-[550] max-[601px]:[&_strong]:text-[17px]">
                                 <span>Загальна вартість робіт</span>
                                 <strong>{formatPrice(Number(detail.project.total))}</strong>
                             </div>
                         </div>
                         <section
                             hidden={view !== 'payments'}
-                            className="workspace-panel bg-[#fff] border border-line rounded-[14px] min-w-0"
+                            className="workspace-panel bg-[var(--tone-bg-ffffff)] border border-line rounded-[14px] min-w-0"
                         >
                             <div className="panel-heading flex justify-between items-start gap-4 pt-[25px] px-6 pb-5 [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:tracking-[-.03em] [&_p]:text-subtle [&_p]:text-[11px] [&_p]:mt-[7px] max-[761px]:pt-[21px] max-[761px]:px-4.5 max-[761px]:pb-4.5">
                                 <div>
@@ -1149,7 +1152,7 @@ export function ProjectEstimate({
                                         key={payment.id}
                                         className={
                                             payment.voided_at
-                                                ? 'payment-void [&_strong]:line-through [&_strong]:text-[#94909c]'
+                                                ? 'payment-void [&_strong]:line-through [&_strong]:text-[var(--tone-text-94909c)]'
                                                 : ''
                                         }
                                     >
@@ -1195,7 +1198,7 @@ export function ProjectEstimate({
                                 ))}
                             </div>
                         </section>
-                        <details className="workspace-panel bg-[#fff] border border-line rounded-[14px] min-w-0 estimate-history py-5 px-6 [&_summary]:flex [&_summary]:items-center [&_summary]:gap-2 [&_summary]:cursor-pointer [&_summary]:font-[550] [&_summary]:text-[13px] [&_ol]:mt-5 [&_li]:border-l-2 [&_li]:border-[#e3ddf7] [&_li]:mt-0 [&_li]:mr-0 [&_li]:mb-4.5 [&_li]:ml-[5px] [&_li]:pl-4 [&_li]:text-[12px] [&_strong]:font-[550] [&_p]:my-[7px] [&_p]:mx-0 [&_p]:wrap-anywhere [&_time]:block [&_time]:text-subtle [&_time]:text-[10px] [&_time]:mt-[3px] [&_small]:block [&_small]:text-subtle [&_small]:text-[10px] [&_small]:mt-[3px]">
+                        <details className="workspace-panel bg-[var(--tone-bg-ffffff)] border border-line rounded-[14px] min-w-0 estimate-history py-5 px-6 [&_summary]:flex [&_summary]:items-center [&_summary]:gap-2 [&_summary]:cursor-pointer [&_summary]:font-[550] [&_summary]:text-[13px] [&_ol]:mt-5 [&_li]:border-l-2 [&_li]:border-[var(--tone-border-e3ddf7)] [&_li]:mt-0 [&_li]:mr-0 [&_li]:mb-4.5 [&_li]:ml-[5px] [&_li]:pl-4 [&_li]:text-[12px] [&_strong]:font-[550] [&_p]:my-[7px] [&_p]:mx-0 [&_p]:wrap-anywhere [&_time]:block [&_time]:text-subtle [&_time]:text-[10px] [&_time]:mt-[3px] [&_small]:block [&_small]:text-subtle [&_small]:text-[10px] [&_small]:mt-[3px]">
                             <summary>
                                 <Clock3 size={17} />
                                 Історія змін ({detail.events.length})

@@ -219,7 +219,7 @@ export function ProjectWorkspace({
                         й підтверджені роботи залишаться.
                     </p>
                     {data.reports.some((r) => r.status === 'SUBMITTED') ? (
-                        <p className="mt-4 rounded-xl bg-amber-50 p-4 text-amber-900">
+                        <p className="mt-4 rounded-xl bg-amber-50 dark:bg-amber-950 p-4 text-amber-900 dark:text-amber-300">
                             Спочатку замовник має перевірити надіслані звіти. Після цього можна
                             змінити кошторис.
                         </p>
@@ -242,7 +242,7 @@ export function ProjectWorkspace({
             )}
             <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                    <span className="rounded-lg bg-[#efedfc] px-3 py-1 text-xs text-brand">
+                    <span className="rounded-lg bg-[var(--tone-bg-efedfc)] px-3 py-1 text-xs text-brand">
                         {statusLabels[p.status]}
                     </span>
                     <h1 className="mt-4 text-3xl font-semibold wrap-anywhere">{p.name}</h1>
@@ -261,12 +261,18 @@ export function ProjectWorkspace({
                 </Button>
             </div>
             {error && (
-                <p role="alert" className="rounded-xl bg-red-50 p-4 text-red-700">
+                <p
+                    role="alert"
+                    className="rounded-xl bg-red-50 dark:bg-red-950 p-4 text-red-700 dark:text-red-300"
+                >
                     {error}
                 </p>
             )}
             {notice && (
-                <p role="status" className="rounded-xl bg-emerald-50 p-4 text-emerald-800">
+                <p
+                    role="status"
+                    className="rounded-xl bg-emerald-50 dark:bg-emerald-950 p-4 text-emerald-800 dark:text-emerald-300"
+                >
                     {notice}
                 </p>
             )}
@@ -296,7 +302,7 @@ export function ProjectWorkspace({
             </p>
             <nav
                 aria-label="Розділи проєкту"
-                className="sticky top-2 z-30 grid grid-cols-4 gap-1 rounded-2xl border border-line bg-white p-1.5 shadow-sm"
+                className="sticky top-2 z-30 grid grid-cols-4 gap-1 rounded-2xl border border-line bg-card p-1.5 shadow-sm"
             >
                 {(
                     [
@@ -310,7 +316,7 @@ export function ProjectWorkspace({
                         key={value}
                         aria-current={tab === value ? 'page' : undefined}
                         onClick={() => setTab(value)}
-                        className="min-h-12 rounded-xl px-1 text-xs font-medium text-subtle transition hover:bg-[#f5f3fc] aria-[current=page]:bg-brand aria-[current=page]:text-white sm:text-sm"
+                        className="min-h-12 rounded-xl px-1 text-xs font-medium text-subtle transition hover:bg-[var(--tone-bg-f5f3fc)] aria-[current=page]:bg-[var(--brand-solid)] aria-[current=page]:text-white sm:text-sm"
                     >
                         {label}
                         {value === 'work' && data.pending_count > 0
@@ -462,7 +468,7 @@ export function ProjectWorkspace({
                     всього плану.
                 </p>
                 {owner && p.status !== 'IN_PROGRESS' && (
-                    <p className="mt-4 rounded-xl bg-amber-50 p-4 text-sm">
+                    <p className="mt-4 rounded-xl bg-amber-50 dark:bg-amber-950 p-4 text-sm">
                         {p.status === 'COMPLETED'
                             ? 'Проєкт завершений. Для нових робіт відкрийте нову редакцію кошторису.'
                             : 'Щоб зафіксувати виконання й додати фотозвіт, потрібне погодження кошторису замовником.'}{' '}
@@ -613,7 +619,7 @@ export function ProjectWorkspace({
                             key={status}
                             onClick={() => setReportTab(status)}
                             aria-pressed={reportTab === status}
-                            className="rounded-xl border border-line px-3 py-2 text-xs aria-pressed:bg-brand aria-pressed:text-white"
+                            className="rounded-xl border border-line px-3 py-2 text-xs aria-pressed:bg-[var(--brand-solid)] aria-pressed:text-white"
                         >
                             {label} ({data.reports.filter((r) => r.status === status).length})
                         </button>
@@ -639,7 +645,7 @@ export function ProjectWorkspace({
                             {r.reviewed_at && ` · перевірено ${displayDate(r.reviewed_at)}`}
                         </p>
                         {r.review_note && (
-                            <p className="mt-2 rounded-lg bg-amber-50 p-3">
+                            <p className="mt-2 rounded-lg bg-amber-50 dark:bg-amber-950 p-3">
                                 Коментар замовника: {r.review_note}
                             </p>
                         )}

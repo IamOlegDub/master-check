@@ -146,3 +146,138 @@
         cursor: pointer;
     }
 }
+
+/* Shared colors for existing Tailwind arbitrary utilities. */
+:root {
+    --brand-solid: #6155db;
+    --tone-bg-eeebf8: #eeebf8;
+    --tone-text-695a9f: #695a9f;
+    --tone-bg-f1effb: #f1effb;
+    --tone-text-b34352: #b34352;
+    --tone-bg-f0eef9: #f0eef9;
+    --tone-text-a14752: #a14752;
+    --tone-bg-fcf0f1: #fcf0f1;
+    --tone-border-f1dce0: #f1dce0;
+    --tone-bg-f7f8fb: #f7f8fb;
+    --tone-bg-e8e9f2: #e8e9f2;
+    --tone-bg-ededf5: #ededf5;
+    --tone-border-e8e5f0: #e8e5f0;
+    --tone-text-8f82c4: #8f82c4;
+    --tone-bg-f0edfc: #f0edfc;
+    --tone-text-8b7bce: #8b7bce;
+    --tone-text-89859e: #89859e;
+    --tone-text-6155db: #6155db;
+    --tone-border-f0eef5: #f0eef5;
+    --tone-text-9793a6: #9793a6;
+    --tone-text-9692a5: #9692a5;
+    --tone-bg-fafaff: #fafaff;
+    --tone-bg-eeedf5: #eeedf5;
+    --tone-bg-efedfc: #efedfc;
+    --tone-text-34755c: #34755c;
+    --tone-bg-edf7f1: #edf7f1;
+    --tone-border-d7eddf: #d7eddf;
+    --tone-bg-ffffff: #ffffff;
+    --tone-bg-f1f1f8: #f1f1f8;
+    --tone-text-55596c: #55596c;
+    --tone-border-e2e4ed: #e2e4ed;
+    --tone-bg-fcfcfe: #fcfcfe;
+    --tone-text-a1a4b0: #a1a4b0;
+    --tone-border-9b8ee1: #9b8ee1;
+    --tone-border-ddd7f5: #ddd7f5;
+    --tone-text-8d7ec9: #8d7ec9;
+    --tone-border-e8e3f7: #e8e3f7;
+    --tone-border-ffffff: #ffffff;
+    --tone-bg-f2f1f8: #f2f1f8;
+    --tone-text-817793: #817793;
+    --tone-text-717486: #717486;
+    --tone-bg-fafafe: #fafafe;
+    --tone-text-838597: #838597;
+    --tone-bg-fcfbff: #fcfbff;
+    --tone-border-f1f2f6: #f1f2f6;
+    --tone-text-82739c: #82739c;
+    --tone-bg-f3f0fa: #f3f0fa;
+    --tone-text-989baa: #989baa;
+    --tone-text-9295a4: #9295a4;
+    --tone-bg-eae8f3: #eae8f3;
+    --tone-bg-f5f3fd: #f5f3fd;
+    --tone-text-7160b6: #7160b6;
+    --tone-border-c8c3d9: #c8c3d9;
+    --tone-border-6155db: #6155db;
+    --tone-text-94909c: #94909c;
+    --tone-border-e3ddf7: #e3ddf7;
+    --tone-bg-f5f3fc: #f5f3fc;
+    --tone-bg-f7f6fd: #f7f6fd;
+    --tone-bg-eeebff: #eeebff;
+}
+.dark {
+    --ink: #eef0fa;
+    --subtle: #acb3c9;
+    --line: #34394d;
+    --brand: #b1a4ff;
+    --background: #111522;
+    --card: #1c2030;
+    --tone-bg-eeebf8: #292e42;
+    --tone-text-695a9f: #b9aaff;
+    --tone-bg-f1effb: #1c2030;
+    --tone-text-b34352: #b9aaff;
+    --tone-bg-f0eef9: #1c2030;
+    --tone-text-a14752: #b9aaff;
+    --tone-bg-fcf0f1: #1c2030;
+    --tone-border-f1dce0: #3b4055;
+    --tone-bg-f7f8fb: #1c2030;
+    --tone-bg-e8e9f2: #292e42;
+    --tone-bg-ededf5: #292e42;
+    --tone-border-e8e5f0: #3b4055;
+    --tone-text-8f82c4: #b9aaff;
+    --tone-bg-f0edfc: #1c2030;
+    --tone-text-8b7bce: #b9aaff;
+    --tone-text-89859e: #b5bbce;
+    --tone-text-6155db: #b9aaff;
+    --tone-border-f0eef5: #3b4055;
+    --tone-text-9793a6: #b5bbce;
+    --tone-text-9692a5: #b5bbce;
+    --tone-bg-fafaff: #1c2030;
+    --tone-bg-eeedf5: #292e42;
+    --tone-bg-efedfc: #1c2030;
+    --tone-text-34755c: #b9aaff;
+    --tone-bg-edf7f1: #292e42;
+    --tone-border-d7eddf: #3b4055;
+    --tone-bg-ffffff: #1c2030;
+    --tone-bg-f1f1f8: #1c2030;
+    --tone-text-55596c: #b5bbce;
+    --tone-border-e2e4ed: #3b4055;
+    --tone-bg-fcfcfe: #1c2030;
+    --tone-text-a1a4b0: #b5bbce;
+    --tone-border-9b8ee1: #3b4055;
+    --tone-border-ddd7f5: #3b4055;
+    --tone-text-8d7ec9: #b9aaff;
+    --tone-border-e8e3f7: #3b4055;
+    --tone-border-ffffff: #3b4055;
+    --tone-bg-f2f1f8: #1c2030;
+    --tone-text-817793: #b5bbce;
+    --tone-text-717486: #b5bbce;
+    --tone-bg-fafafe: #1c2030;
+    --tone-text-838597: #b5bbce;
+    --tone-bg-fcfbff: #1c2030;
+    --tone-border-f1f2f6: #3b4055;
+    --tone-text-82739c: #b5bbce;
+    --tone-bg-f3f0fa: #1c2030;
+    --tone-text-989baa: #b5bbce;
+    --tone-text-9295a4: #b5bbce;
+    --tone-bg-eae8f3: #292e42;
+    --tone-bg-f5f3fd: #1c2030;
+    --tone-text-7160b6: #b9aaff;
+    --tone-border-c8c3d9: #3b4055;
+    --tone-border-6155db: #3b4055;
+    --tone-text-94909c: #b5bbce;
+    --tone-border-e3ddf7: #3b4055;
+    --tone-bg-f5f3fc: #1c2030;
+    --tone-bg-f7f6fd: #1c2030;
+    --tone-bg-eeebff: #1c2030;
+}
+
+@layer base {
+    .dark .login-page {
+        background: radial-gradient(ellipse at 50% 35%, #27213d, #111522 65%);
+    }
+}

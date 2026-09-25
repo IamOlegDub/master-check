@@ -35,11 +35,11 @@ export function InstallApp() {
     }, []);
     if (installed) return null;
     return (
-        <section className="mt-6 rounded-2xl border border-line bg-white p-5">
+        <section className="mt-6 rounded-2xl border border-line bg-card p-5">
             <h2 className="font-semibold">Застосунок на головному екрані</h2>
             {prompt ? (
                 <button
-                    className="mt-3 rounded-xl bg-brand p-3 text-white"
+                    className="mt-3 rounded-xl bg-[var(--brand-solid)] p-3 text-white"
                     onClick={async () => {
                         await prompt.prompt();
                         await prompt.userChoice;

@@ -117,7 +117,7 @@ export function OverviewVideo({
     }
     if (!owner && !path) return null;
     return (
-        <section className="mt-5 rounded-2xl border border-line bg-[#fafaff] p-4 sm:p-5">
+        <section className="mt-5 rounded-2xl border border-line bg-[var(--tone-bg-fafaff)] p-4 sm:p-5">
             <BusyIndicator busy={busy} label="Зберігаємо оглядове відео…" />
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <h3 className="flex items-center gap-2 font-semibold">
@@ -128,7 +128,7 @@ export function OverviewVideo({
                     <button
                         disabled={busy}
                         onClick={() => setConfirm(true)}
-                        className="flex items-center gap-2 text-xs text-red-700"
+                        className="flex items-center gap-2 text-xs text-red-700 dark:text-red-300"
                     >
                         <Trash2 size={16} />
                         Видалити відео
@@ -140,7 +140,7 @@ export function OverviewVideo({
                 попереднє.
             </p>
             {error && (
-                <p role="alert" className="mt-3 text-sm text-red-700">
+                <p role="alert" className="mt-3 text-sm text-red-700 dark:text-red-300">
                     {error}{' '}
                     <button onClick={() => setRetry((x) => x + 1)} className="underline">
                         Оновити
@@ -165,7 +165,7 @@ export function OverviewVideo({
                 ) : (
                     <div
                         role="status"
-                        className="mt-4 grid h-40 place-items-center rounded-xl bg-[#eeedf5] text-sm text-subtle"
+                        className="mt-4 grid h-40 place-items-center rounded-xl bg-[var(--tone-bg-eeedf5)] text-sm text-subtle"
                     >
                         Завантажуємо відео…
                     </div>
@@ -187,7 +187,7 @@ export function OverviewVideo({
                             />
                         </label>
                         <button
-                            className="self-end rounded-xl bg-brand px-4 py-3 text-sm text-white disabled:opacity-50"
+                            className="self-end rounded-xl bg-[var(--brand-solid)] px-4 py-3 text-sm text-white disabled:opacity-50"
                             type="submit"
                         >
                             {busy ? 'Завантажуємо…' : path ? 'Замінити відео' : 'Завантажити відео'}

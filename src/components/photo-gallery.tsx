@@ -61,7 +61,7 @@ export function PhotoGallery({
                 <button onClick={() => setRetry((x) => x + 1)}>Оновити фото</button>
             </div>
             {error && (
-                <p role="alert" className="text-red-700">
+                <p role="alert" className="text-red-700 dark:text-red-300">
                     {error}
                 </p>
             )}
@@ -79,7 +79,7 @@ export function PhotoGallery({
                             type="button"
                             key={photo.path}
                             onClick={() => setActive(index)}
-                            className="w-full overflow-hidden rounded-xl border border-line bg-white text-left"
+                            className="w-full overflow-hidden rounded-xl border border-line bg-card text-left"
                             aria-label={`Відкрити фото ${index + 1}`}
                         >
                             {urls[photo.path] ? (
@@ -102,7 +102,7 @@ export function PhotoGallery({
                                 <div
                                     role="status"
                                     aria-label="Завантажуємо фото"
-                                    className="aspect-square w-full bg-[#eeedf5] motion-safe:animate-pulse"
+                                    className="aspect-square w-full bg-[var(--tone-bg-eeedf5)] motion-safe:animate-pulse"
                                 />
                             )}
                             {!preview && photo.caption && (
@@ -116,16 +116,16 @@ export function PhotoGallery({
                                 <Menu.Trigger
                                     disabled={busy}
                                     aria-label={`Дії з фото ${index + 1}`}
-                                    className="absolute top-2 right-2 flex size-10 items-center justify-center rounded-full bg-white/95 text-ink shadow-sm"
+                                    className="absolute top-2 right-2 flex size-10 items-center justify-center rounded-full bg-card/95 text-ink shadow-sm"
                                 >
                                     <MoreVertical size={20} />
                                 </Menu.Trigger>
                                 <Menu.Portal>
                                     <Menu.Positioner align="end" sideOffset={4} className="z-[110]">
-                                        <Menu.Popup className="min-w-40 rounded-xl border border-line bg-white p-1.5 shadow-lg">
+                                        <Menu.Popup className="min-w-40 rounded-xl border border-line bg-card p-1.5 shadow-lg">
                                             <Menu.Item
                                                 onClick={() => onDelete(photo)}
-                                                className="flex cursor-pointer items-center gap-2 rounded-lg p-3 text-sm text-red-700 outline-none data-highlighted:bg-red-50"
+                                                className="flex cursor-pointer items-center gap-2 rounded-lg p-3 text-sm text-red-700 dark:text-red-300 outline-none data-highlighted:bg-red-50 dark:bg-red-950"
                                             >
                                                 <Trash2 size={17} />
                                                 Видалити
@@ -156,14 +156,14 @@ export function PhotoGallery({
                         }}
                     >
                         <Dialog.Title className="sr-only">Перегляд фотографій</Dialog.Title>
-                        <Dialog.Close className="absolute top-2 right-2 rounded-lg bg-white px-4 py-3 text-black">
+                        <Dialog.Close className="absolute top-2 right-2 rounded-lg bg-card px-4 py-3 text-ink">
                             Закрити
                         </Dialog.Close>
                         {onDelete && active !== null && photos[active] && (
                             <button
                                 disabled={busy}
                                 aria-label="Видалити це фото"
-                                className="absolute top-2 left-2 flex size-12 items-center justify-center rounded-xl bg-white/15 text-white hover:bg-red-600"
+                                className="absolute top-2 left-2 flex size-12 items-center justify-center rounded-xl bg-card/15 text-white hover:bg-red-600 dark:bg-red-950"
                                 onClick={() => {
                                     const photo = photos[active];
                                     setActive(null);
