@@ -609,7 +609,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                                 className="min-w-0 w-full outline-none"
                                                 value={query}
                                                 onChange={(event) => setQuery(event.target.value)}
-                                                placeholder="Знайти послугу…"
+                                                placeholder="Пошук від 3 літер…"
                                                 aria-label="Пошук послуг"
                                             />
                                         </span>

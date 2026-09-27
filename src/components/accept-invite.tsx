@@ -23,7 +23,7 @@ export function AcceptInvite({ token }: { token: string }) {
         try {
             const c = createSupabaseBrowserClient();
             if (!c) throw Error('Немає з’єднання.');
-            const r = await c.auth.signOut();
+            const r = await c.auth.signOut({ scope: 'local' });
             if (r.error) throw r.error;
             window.location.assign(`/login?next=${encodeURIComponent(`/invite/${token}`)}`);
         } catch (e) {

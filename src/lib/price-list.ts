@@ -44,15 +44,22 @@ export function selectServices(
     sort: ServiceSort,
 ) {
     const names = new Map(categories.map((category) => [category.id, category.name]));
-    const search = query.trim().toLocaleLowerCase('uk-UA');
+    const search = query.trim().normalize('NFC').toLocaleLowerCase('uk-UA');
+    const terms = search.match(/[\p{L}\p{N}]+/gu) ?? [];
     const compare = (a: string, b: string) => a.localeCompare(b, 'uk-UA');
     return services
         .filter(
             (service) =>
                 (!categoryId || service.category_id === categoryId) &&
-                `${service.name} ${names.get(service.category_id) ?? ''}`
-                    .toLocaleLowerCase('uk-UA')
-                    .includes(search),
+                (search.length < 3 ||
+                    terms.every((term) =>
+                        (
+                            service.name
+                                .normalize('NFC')
+                                .toLocaleLowerCase('uk-UA')
+                                .match(/[\p{L}\p{N}]+/gu) ?? []
+                        ).some((word) => word.startsWith(term)),
+                    )),
         )
         .sort((a, b) => {
             const byName = compare(a.name, b.name) || a.id.localeCompare(b.id);

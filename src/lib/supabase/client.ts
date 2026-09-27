@@ -9,5 +9,7 @@ export function createSupabaseBrowserClient() {
         return null;
     }
 
-    return createBrowserClient(env.url, env.key);
+    return createBrowserClient(env.url, env.key, {
+        auth: { persistSession: true, autoRefreshToken: true },
+    });
 }

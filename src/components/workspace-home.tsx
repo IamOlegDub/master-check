@@ -7,6 +7,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { formatPrice } from '@/lib/price-list';
 import { projectHref, projectSlug } from '@/lib/project-url';
 import { BusyIndicator } from '@/components/feedback';
+import { PendingProjectInvites } from '@/components/pending-project-invites';
 import { ProjectPaymentStatus } from '@/components/project-payment-status';
 import {
     statusLabels,
@@ -102,6 +103,7 @@ export function WorkspaceHome({
                     </Button>
                 )}
             </div>
+            {role === 'CLIENT' && <PendingProjectInvites />}
             {overview && (
                 <>
                     <section

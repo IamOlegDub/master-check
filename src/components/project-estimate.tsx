@@ -1,9 +1,10 @@
 'use client';
 
+import { ProjectComments } from '@/components/project-collaboration';
 import { ActionModal } from '@/components/action-modal';
 import { BusyIndicator } from '@/components/feedback';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
-import { Check, Clock3, Pencil, Plus, RefreshCw, Trash2, Wallet } from 'lucide-react';
+import { Check, Clock3, Pencil, Plus, RefreshCw, Search, Trash2, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import {
@@ -109,10 +110,7 @@ export function ProjectEstimate({
     const loadId = useRef(0);
     const selectedService = services.find((service) => service.id === serviceId);
     const matchingServices = selectServices(services, categories, categoryId, search, 'name');
-    const visibleServices =
-        selectedService && !matchingServices.some((s) => s.id === selectedService.id)
-            ? [selectedService, ...matchingServices]
-            : matchingServices;
+    const visibleServices = matchingServices;
     const preview = calculateLineTotal(
         quantity,
         editing ? price : String(selectedService?.price ?? 0),
@@ -443,8 +441,7 @@ export function ProjectEstimate({
                                     hidden={view !== 'payments'}
                                     onClick={() => openAction({ kind: 'payment' })}
                                 >
-                                    <Wallet size={17} />
-                                    Внести аванс
+                                    <Wallet size={17} />+ Оплата
                                 </Button>
                                 <Button
                                     variant="brand"
@@ -529,15 +526,68 @@ export function ProjectEstimate({
                                                 {!editing && (
                                                     <>
                                                         <label>
-                                                            Пошук у прайсі
+                                                            <span className="flex items-center gap-2">
+                                                                <Search
+                                                                    size={17}
+                                                                    aria-hidden="true"
+                                                                />
+                                                                Пошук у прайсі
+                                                            </span>
                                                             <input
                                                                 className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
                                                                 value={search}
-                                                                onChange={(event) =>
-                                                                    setSearch(event.target.value)
-                                                                }
-                                                                placeholder="Назва послуги"
+                                                                onChange={(event) => {
+                                                                    setSearch(event.target.value);
+                                                                    setServiceId('');
+                                                                }}
+                                                                placeholder="Введіть щонайменше 3 літери"
                                                             />
+                                                            <span
+                                                                role="status"
+                                                                className="mt-2 block text-xs text-subtle"
+                                                            >
+                                                                {search.trim().length < 3
+                                                                    ? 'Пошук за початком будь-якого слова в назві — від 3 літер.'
+                                                                    : 'Знайдено: ' +
+                                                                      matchingServices.length}
+                                                            </span>
+                                                            {search.trim().length >= 3 && (
+                                                                <ul className="mt-2 max-h-60 overflow-auto rounded-lg border border-line">
+                                                                    {matchingServices.map(
+                                                                        (service) => (
+                                                                            <li key={service.id}>
+                                                                                <button
+                                                                                    type="button"
+                                                                                    aria-pressed={
+                                                                                        serviceId ===
+                                                                                        service.id
+                                                                                    }
+                                                                                    className="w-full px-3 py-3 text-left hover:bg-brand/10 aria-pressed:bg-brand/10"
+                                                                                    onClick={() =>
+                                                                                        setServiceId(
+                                                                                            service.id,
+                                                                                        )
+                                                                                    }
+                                                                                >
+                                                                                    {service.name} ·{' '}
+                                                                                    {formatPrice(
+                                                                                        Number(
+                                                                                            service.price,
+                                                                                        ),
+                                                                                    )}
+                                                                                    /
+                                                                                    {
+                                                                                        serviceUnits[
+                                                                                            service
+                                                                                                .unit
+                                                                                        ]
+                                                                                    }
+                                                                                </button>
+                                                                            </li>
+                                                                        ),
+                                                                    )}
+                                                                </ul>
+                                                            )}
                                                         </label>
                                                         <label>
                                                             Категорія
@@ -1121,6 +1171,7 @@ export function ProjectEstimate({
                                                         </Button>
                                                     )}
                                                 </div>
+                                                <ProjectComments itemId={item.id} />
                                             </article>
                                         );
                                     })}

@@ -2,6 +2,13 @@
 import { useCallback, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import {
+    ProjectCollaborationProvider,
+    ProjectComments,
+    PaymentNotices,
+    ProjectEventFeed,
+    PaymentActivitySummary,
+} from '@/components/project-collaboration';
 import { ProjectEstimate } from '@/components/project-estimate';
 import { PhotoGallery } from '@/components/photo-gallery';
 import { ShareLink } from '@/components/share-link';
@@ -67,15 +74,17 @@ export function ProjectWorkspace({
         [notice, setNotice] = useState(''),
         [busy, setBusy] = useState(false),
         [invite, setInvite] = useState(''),
+        [inviteEmail, setInviteEmail] = useState(''),
+        [clientFound, setClientFound] = useState<boolean | null>(null),
         [reason, setReason] = useState(''),
         [files, setFiles] = useState<File[]>([]),
         [showReport, setShowReport] = useState(false),
         [reportTab, setReportTab] = useState('SUBMITTED'),
-        [tab, setTab] = useState<'estimate' | 'work' | 'payments' | 'access'>(
+        [tab, setTab] = useState<'estimate' | 'work' | 'payments' | 'access' | 'discussion'>(
             initial.project.status === 'DRAFT'
                 ? 'estimate'
                 : initial.project.status === 'PENDING_APPROVAL'
-                  ? 'access'
+                  ? 'estimate'
                   : 'work',
         ),
         [reportItem, setReportItem] = useState(''),
@@ -125,6 +134,27 @@ export function ProjectWorkspace({
             setBusy(false);
         }
     }
+    async function findClient() {
+        if (busy) return;
+        setBusy(true);
+        setError('');
+        setClientFound(null);
+        setInvite('');
+        try {
+            const c = createSupabaseBrowserClient();
+            if (!c) throw Error('Немає з’єднання.');
+            const r = await c.rpc('find_project_client', {
+                p_project_id: projectId,
+                p_email: inviteEmail,
+            });
+            if (r.error) throw r.error;
+            setClientFound(r.data.found);
+        } catch (e) {
+            setError(message(e));
+        } finally {
+            setBusy(false);
+        }
+    }
     async function makeInvite() {
         if (busy) return;
         setBusy(true);
@@ -132,9 +162,14 @@ export function ProjectWorkspace({
         try {
             const c = createSupabaseBrowserClient();
             if (!c) throw Error('Немає з’єднання.');
-            const r = await c.rpc('make_invite', { p_project_id: projectId });
+            const r = await c.rpc('make_invite', { p_project_id: projectId, p_email: inviteEmail });
             if (r.error) throw r.error;
             setInvite(`${location.origin}/invite/${r.data}`);
+            setNotice(
+                clientFound
+                    ? 'Запрошення з’явиться в кабінеті замовника.'
+                    : 'Запрошення прив’язане до вказаної пошти. Передайте посилання замовнику.',
+            );
         } catch (e) {
             setError(message(e));
         } finally {
@@ -204,7 +239,13 @@ export function ProjectWorkspace({
         balance = confirmed - Number(p.paid);
     const reports = data.reports.filter((r) => r.status === reportTab);
     return (
-        <>
+        <ProjectCollaborationProvider
+            projectId={projectId}
+            userId={userId}
+            ownerId={p.user_id}
+            itemIds={data.items.map((item) => item.id)}
+            onChanged={changed}
+        >
             <BusyIndicator busy={busy} label="Оновлюємо проєкт…" />
             {showRevision && (
                 <ActionModal
@@ -300,23 +341,25 @@ export function ProjectWorkspace({
                 Залишок за всім планом: {formatPrice(Math.max(0, Number(p.total) - Number(p.paid)))}
                 .
             </p>
+            <PaymentActivitySummary onOpen={() => setTab('payments')} />
             <nav
                 aria-label="Розділи проєкту"
-                className="sticky top-2 z-30 grid grid-cols-4 gap-1 rounded-2xl border border-line bg-card p-1.5 shadow-sm"
+                className="sticky top-2 z-30 flex flex-wrap gap-1 rounded-2xl border border-line bg-card p-1.5 shadow-sm"
             >
                 {(
                     [
                         ['estimate', 'Кошторис'],
                         ['work', 'Виконання'],
                         ['payments', 'Оплати'],
-                        ['access', 'Доступ'],
+                        ...(owner ? [['access', 'Доступ'] as const] : []),
+                        ['discussion', 'Обговорення'],
                     ] as const
                 ).map(([value, label]) => (
                     <button
                         key={value}
                         aria-current={tab === value ? 'page' : undefined}
                         onClick={() => setTab(value)}
-                        className="min-h-12 rounded-xl px-1 text-xs font-medium text-subtle transition hover:bg-[var(--tone-bg-f5f3fc)] aria-[current=page]:bg-[var(--brand-solid)] aria-[current=page]:text-white sm:text-sm"
+                        className="min-h-12 flex-1 rounded-xl px-2 text-xs font-medium text-subtle transition hover:bg-[var(--tone-bg-f5f3fc)] aria-[current=page]:bg-[var(--brand-solid)] aria-[current=page]:text-white sm:text-sm"
                     >
                         {label}
                         {value === 'work' && data.pending_count > 0
@@ -325,14 +368,16 @@ export function ProjectWorkspace({
                     </button>
                 ))}
             </nav>
-            <section hidden={tab !== 'access'} className={panelClass}>
-                <h2 className="text-lg font-semibold">Погодження та доступ</h2>
-                {owner && (
+            <section hidden={tab !== 'access' && tab !== 'estimate'} className={panelClass}>
+                <h2 className="text-lg font-semibold">
+                    {tab === 'access' ? 'Доступ замовника' : 'Погодження кошторису'}
+                </h2>
+                {owner && tab === 'access' && (
                     <>
                         <p className="mt-2 text-subtle">
                             {data.has_client
                                 ? 'Замовник підключений до проєкту.'
-                                : 'Надішліть замовнику одноразове запрошення. Воно діє 7 днів; нове посилання скасовує попереднє.'}
+                                : 'Знайдіть замовника за точною поштою входу. Запрошення може прийняти лише цей акаунт; посилання діє 7 днів.'}
                         </p>
                         {p.status === 'DRAFT' && (
                             <label className="mt-4 block">
@@ -357,16 +402,51 @@ export function ProjectWorkspace({
                             </label>
                         )}
                         {!data.has_client && (
+                            <div className="mt-4 space-y-3">
+                                <label className="block">
+                                    Пошта акаунта замовника
+                                    <input
+                                        type="email"
+                                        autoComplete="off"
+                                        className={inputClass}
+                                        value={inviteEmail}
+                                        disabled={busy}
+                                        onChange={(e) => {
+                                            setInviteEmail(e.target.value);
+                                            setClientFound(null);
+                                            setInvite('');
+                                        }}
+                                    />
+                                </label>
+                                <Button
+                                    disabled={busy || !inviteEmail.trim()}
+                                    variant="outline"
+                                    onClick={() => void findClient()}
+                                >
+                                    Знайти в нашій базі
+                                </Button>
+                                {clientFound !== null && (
+                                    <p className="text-sm">
+                                        {clientFound
+                                            ? 'Акаунт замовника знайдено. Запрошення з’явиться в його кабінеті.'
+                                            : 'Акаунт замовника не знайдено. Створіть посилання та попросіть увійти з цією поштою як замовник.'}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+                        {!data.has_client && clientFound !== null && (
                             <Button
                                 className="mt-4"
                                 variant="outline"
                                 disabled={busy}
                                 onClick={() => void makeInvite()}
                             >
-                                Створити запрошення
+                                {clientFound
+                                    ? 'Запросити в застосунку'
+                                    : 'Створити посилання для замовника'}
                             </Button>
                         )}
-                        {invite && !data.has_client && (
+                        {invite && !data.has_client && clientFound === false && (
                             <ShareLink
                                 url={invite}
                                 title={`Запрошення: ${p.name}`}
@@ -375,7 +455,7 @@ export function ProjectWorkspace({
                         )}
                     </>
                 )}
-                <div className="mt-4 flex flex-wrap gap-3">
+                <div hidden={tab !== 'estimate'} className="mt-4 flex flex-wrap gap-3">
                     {owner && p.status === 'DRAFT' && (
                         <Button
                             variant="brand"
@@ -403,7 +483,7 @@ export function ProjectWorkspace({
                             </Button>
                         </>
                     )}
-                    {owner && p.status !== 'DRAFT' && (
+                    {owner && (p.status === 'IN_PROGRESS' || p.status === 'COMPLETED') && (
                         <Button
                             disabled={busy}
                             variant="outline"
@@ -429,7 +509,7 @@ export function ProjectWorkspace({
                         </Button>
                     )}
                 </div>
-                {!owner && p.status === 'PENDING_APPROVAL' && (
+                {!owner && tab === 'estimate' && p.status === 'PENDING_APPROVAL' && (
                     <label className="mt-4 block">
                         Що потрібно змінити?
                         <textarea
@@ -439,6 +519,18 @@ export function ProjectWorkspace({
                             onChange={(e) => setReason(e.target.value)}
                         />
                     </label>
+                )}
+                {owner && tab === 'estimate' && !data.has_client && (
+                    <Button className="mt-3" variant="outline" onClick={() => setTab('access')}>
+                        Підключити замовника для погодження
+                    </Button>
+                )}
+                {!owner && p.status !== 'PENDING_APPROVAL' && (
+                    <p className="mt-3 text-subtle">
+                        {p.status === 'DRAFT'
+                            ? 'Майстер готує кошторис. Погодження стане доступним після надсилання.'
+                            : 'Кошторис погоджено. Виконані обсяги можна підтверджувати у вкладці «Виконання».'}
+                    </p>
                 )}
                 {data.activity?.map((a, index) => (
                     <p key={index} className="mt-3 text-xs text-subtle">
@@ -693,13 +785,13 @@ export function ProjectWorkspace({
             </section>
             {owner && (tab === 'estimate' || tab === 'payments') ? (
                 <ProjectEstimate
-                    key={p.status}
+                    key={`${p.status}:${p.version}`}
                     projectId={projectId}
                     userId={userId}
                     onProjectChange={changed}
                     openPriceList={() => router.push('/services')}
                     workflowMode
-                    estimateLocked={p.status !== 'DRAFT'}
+                    estimateLocked={p.status !== 'DRAFT' && p.status !== 'PENDING_APPROVAL'}
                     onRevise={p.status === 'COMPLETED' ? undefined : () => setShowRevision(true)}
                     view={tab}
                 />
@@ -725,6 +817,7 @@ export function ProjectWorkspace({
                                     <p className="mt-2 text-xs text-subtle">
                                         Підтверджено {done} із {i.quantity} {serviceUnits[i.unit]}
                                     </p>
+                                    <ProjectComments itemId={i.id} />
                                     <progress
                                         className="mt-2 h-2 w-full accent-brand"
                                         value={done}
@@ -760,6 +853,18 @@ export function ProjectWorkspace({
                     </section>
                 </>
             ) : null}
+            {tab === 'payments' && (
+                <>
+                    <PaymentNotices />
+                    <ProjectEventFeed />
+                </>
+            )}
+            {tab === 'discussion' && (
+                <>
+                    <ProjectComments />
+                    <ProjectEventFeed />
+                </>
+            )}
             {tab === 'work' && (
                 <OverviewVideo
                     path={p.overview_video_path}
@@ -770,6 +875,6 @@ export function ProjectWorkspace({
                     onChanged={changed}
                 />
             )}
-        </>
+        </ProjectCollaborationProvider>
     );
 }

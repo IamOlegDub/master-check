@@ -10,7 +10,17 @@ const getWorkspaceContext = cache(async () => {
     if (!supabase) redirect('/login');
     const {
         data: { user },
+        error: authError,
     } = await supabase.auth.getUser();
+    if (
+        authError &&
+        (authError.name === 'AuthRetryableFetchError' ||
+            authError.status === 429 ||
+            (authError.status ?? 0) >= 500)
+    )
+        throw new Error(
+            'Не вдалося перевірити сесію. Оновіть сторінку, повторний вхід не потрібен.',
+        );
     if (!user) redirect('/login');
     const { data: account, error } = await supabase
         .from('accounts')

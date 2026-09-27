@@ -19,7 +19,9 @@ export async function proxy(request: NextRequest) {
             },
             setAll(cookiesToSet) {
                 cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+                const previousCookies = response.cookies.getAll();
                 response = NextResponse.next({ request });
+                previousCookies.forEach((cookie) => response.cookies.set(cookie));
                 cookiesToSet.forEach(({ name, value, options }) => {
                     response.cookies.set(name, value, options);
                 });
@@ -29,7 +31,30 @@ export async function proxy(request: NextRequest) {
 
     const {
         data: { user },
+        error: authError,
     } = await supabase.auth.getUser();
+    // A temporary auth outage must not look like a logout. Keep refresh cookies
+    // and let the user retry instead of sending them through OAuth again.
+    if (
+        authError &&
+        (authError.name === 'AuthRetryableFetchError' ||
+            authError.status === 429 ||
+            (authError.status ?? 0) >= 500)
+    ) {
+        const unavailable = new NextResponse(
+            'Тимчасово не вдалося перевірити сесію. Оновіть сторінку — повторний вхід не потрібен.',
+            {
+                status: 503,
+                headers: {
+                    'Content-Type': 'text/plain; charset=utf-8',
+                    'Retry-After': '5',
+                    'Cache-Control': 'no-store',
+                },
+            },
+        );
+        response.cookies.getAll().forEach((cookie) => unavailable.cookies.set(cookie));
+        return unavailable;
+    }
     const isPublicRoute =
         request.nextUrl.pathname.startsWith('/login') ||
         request.nextUrl.pathname.startsWith('/auth') ||

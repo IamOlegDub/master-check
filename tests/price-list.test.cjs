@@ -20,7 +20,7 @@ const services = [
 
 test('category and search filters combine; numeric prices sort without mutating source', () => {
     assert.deepEqual(selectServices(services, categories, 'tile', ' TILE ', 'price-desc').map(s => s.id), ['1', '3']);
-    assert.deepEqual(selectServices(services, categories, '', categories[1].name.toUpperCase(), 'name').map(s => s.id), ['2']);
+    assert.deepEqual(selectServices(services, categories, '', categories[1].name.toUpperCase(), 'name').map(s => s.id), []);
     assert.deepEqual(selectServices(services, categories, '', '', 'price-asc').map(s => s.id), ['3', '1', '2']);
     assert.deepEqual(services.map(s => s.id), ['1', '2', '3']);
 });
@@ -63,4 +63,21 @@ test('PDF embeds Cyrillic glyphs, wraps long names, paginates and includes only 
     assert.equal(single.lastAutoTable.body[0].raw[0], 'Tile work');
     assert.throws(() => buildPriceListPdf({services: [], categories, author: '', contact: ''}, font));
     if (process.env.PRICE_LIST_REVIEW_PDF) fs.writeFileSync(process.env.PRICE_LIST_REVIEW_PDF, pdf);
+});
+
+
+test('search starts at three characters and matches exact prefixes of every service-name word', () => {
+    const rows = [
+        { id: '1', name: 'Укладання плитки', category_id: 'tile' },
+        { id: '2', name: 'Шпаклювання стін', category_id: 'tile' },
+        { id: '3', name: 'Монтаж електроплитки', category_id: 'tile' },
+    ];
+    const find = query => selectServices(rows, categories, '', query, 'name').map(s => s.id);
+    assert.equal(find('пл').length, 3);
+    assert.deepEqual(find(' ПЛИ '), ['1']);
+    assert.deepEqual(find('пли укл'), ['1']);
+    assert.deepEqual(find('лит'), []);
+    assert.deepEqual(find('плм'), []);
+    assert.deepEqual(find('стін'), ['2']);
+    assert.deepEqual(selectServices(rows, categories, 'wood', 'пли', 'name'), []);
 });

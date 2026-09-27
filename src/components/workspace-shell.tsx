@@ -1,5 +1,5 @@
 'use client';
-import { type ReactNode, useState, createContext, useContext } from 'react';
+import { type ReactNode, useState, useEffect, createContext, useContext } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, ClipboardList, Hammer, Camera, Users } from 'lucide-react';
@@ -22,6 +22,11 @@ export function WorkspaceShell({
     name: string;
     avatar?: string;
 }) {
+    // Start Supabase's shared browser client on every workspace page, including
+    // read-only screens, so its built-in token refresh stays active.
+    useEffect(() => {
+        createSupabaseBrowserClient();
+    }, []);
     const path = usePathname();
     const [{ name, avatar }, updateAccount] = useState<{ name: string; avatar?: string }>({
         name: initialName,
@@ -53,7 +58,7 @@ export function WorkspaceShell({
         try {
             const client = createSupabaseBrowserClient();
             if (!client) throw Error('Offline');
-            const result = await client.auth.signOut();
+            const result = await client.auth.signOut({ scope: 'local' });
             if (result.error) throw result.error;
             window.location.assign('/login');
         } catch {

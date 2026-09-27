@@ -13,9 +13,9 @@ test('collaboration migrations enforce roles, invitations, approvals, partial re
         service = crypto.randomUUID();
     try {
         await db.exec(
-            `create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema public,auth to authenticated,anon;create schema storage;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);create table storage.objects(id uuid default gen_random_uuid(),bucket_id text,name text);alter table storage.objects enable row level security;grant usage on schema storage to anon,authenticated;grant select,insert,delete on storage.objects to anon,authenticated;create function storage.foldername(text) returns text[] language sql immutable as $$select string_to_array($1,'/')$$;`,
+            `create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema public,auth to authenticated,anon;create schema storage;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);create table storage.objects(id uuid default gen_random_uuid(),bucket_id text,name text);alter table storage.objects enable row level security;grant usage on schema storage to anon,authenticated;grant select,insert,delete on storage.objects to anon,authenticated;create function storage.foldername(text) returns text[] language sql immutable as $$select string_to_array($1,'/')$$;`,
         );
-        await db.query('insert into auth.users values($1)', [master]);
+        await db.query('insert into auth.users(id) values($1)', [master]);
         for (const name of fs.readdirSync('supabase/migrations').sort()) {
             if (name === '202609240001_readable_urls_and_media.sql')
                 await db.query(
@@ -28,7 +28,7 @@ test('collaboration migrations enforce roles, invitations, approvals, partial re
             await db.query('select slug from public.projects order by created_at')
         ).rows.map((r) => r.slug);
         assert.deepEqual(migratedSlugs, ['house', 'house-2', 'house-2-2']);
-        await db.query('insert into auth.users values($1),($2)', [client, other]);
+        await db.query('insert into auth.users(id) values($1),($2)', [client, other]);
         async function as(uid, role = 'authenticated') {
             await db.exec('reset role');
             await db.query("select set_config('request.jwt.claim.sub',$1,false)", [uid ?? '']);
@@ -81,8 +81,11 @@ test('collaboration migrations enforce roles, invitations, approvals, partial re
             project,
         );
         const item = detail.items[0].id;
-        const revoked = await rpc('make_invite', { project });
-        const invite = await rpc('make_invite', { project });
+        await db.exec('reset role');
+        await db.query("update auth.users set email='client@example.com',email_confirmed_at=now() where id=$1", [client]);
+        await as(master);
+        const revoked = await rpc('make_invite', { project, email: 'client@example.com' });
+        const invite = await rpc('make_invite', { project, email: 'client@example.com' });
         await as(client);
         await assert.rejects(() => rpc('accept_invite', { invite: revoked }));
         assert.equal(await rpc('accept_invite', { invite }), project);
@@ -326,7 +329,7 @@ test('collaboration migrations enforce roles, invitations, approvals, partial re
         assert.equal((await db.query('select * from storage.objects')).rows.length, 0);
         const anotherMaster = crypto.randomUUID();
         await db.exec('reset role');
-        await db.query('insert into auth.users values($1)', [anotherMaster]);
+        await db.query('insert into auth.users(id) values($1)', [anotherMaster]);
         await as(anotherMaster);
         await rpc('choose_role', { role: 'MASTER' });
         await assert.rejects(() =>
