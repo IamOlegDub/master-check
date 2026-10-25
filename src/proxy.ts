@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { getSupabaseEnv } from '@/lib/supabase/env';
-import { safeReturnPath } from '@/lib/auth-redirect';
+import { isTemporaryAuthError, safeReturnPath } from '@/lib/auth-redirect';
 
 export async function proxy(request: NextRequest) {
     const env = getSupabaseEnv();
@@ -33,14 +33,8 @@ export async function proxy(request: NextRequest) {
         data: { user },
         error: authError,
     } = await supabase.auth.getUser();
-    // A temporary auth outage must not look like a logout. Keep refresh cookies
-    // and let the user retry instead of sending them through OAuth again.
-    if (
-        authError &&
-        (authError.name === 'AuthRetryableFetchError' ||
-            authError.status === 429 ||
-            (authError.status ?? 0) >= 500)
-    ) {
+    // Keep refresh cookies and let the user retry instead of sending them through OAuth again.
+    if (isTemporaryAuthError(authError)) {
         const unavailable = new NextResponse(
             'Тимчасово не вдалося перевірити сесію. Оновіть сторінку — повторний вхід не потрібен.',
             {

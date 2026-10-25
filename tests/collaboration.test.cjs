@@ -29,12 +29,13 @@ test('bound invitations, append-only discussions, private files and exactly-once
         await as(client); await rpc('choose_role', 'CLIENT');
         await as(master); await rpc('register_master', 'test-master');
         await db.query("insert into public.projects(id,user_id,name) values($1,$3,'First'),($2,$3,'Second')", [project, second, master]);
-        assert.equal((await rpc('find_project_client', project, ' CLIENT@example.com ')).found, true);
-        assert.equal((await rpc('find_project_client', project, 'absent@example.com')).found, false);
-        const old = await rpc('make_invite', project, 'client@example.com');
+        // Invites never reveal whether an email belongs to a registered client.
+        assert.match(await rpc('make_invite', project, 'absent@example.com'), /^[0-9a-f-]{36}$/);
+        await assert.rejects(() => rpc('make_invite', project, 'not-an-email'));
+        const old = await rpc('make_invite', project, ' CLIENT@example.com ');
         const invite = await rpc('make_invite', project, 'client@example.com');
         await as(outsider);
-        await assert.rejects(() => rpc('find_project_client', project, 'client@example.com'));
+        await assert.rejects(() => rpc('make_invite', project, 'client@example.com'));
         await assert.rejects(() => rpc('accept_invite', invite));
         assert.deepEqual(await rpc('pending_project_invites'), []);
         await as(client);

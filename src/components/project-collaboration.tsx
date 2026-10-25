@@ -65,6 +65,7 @@ export function ProjectCollaborationProvider({
     projectId: string;
     userId: string;
     ownerId: string;
+    itemIds: string[];
     onChanged: () => void;
     children: ReactNode;
 }) {
@@ -126,13 +127,20 @@ export function ProjectCollaborationProvider({
             )
             .subscribe();
         const timer = window.setInterval(update, 10000);
-        window.addEventListener('focus', update);
-        document.addEventListener('visibilitychange', update);
+        let returnedAt = 0;
+        // Focus and visibilitychange both fire when the user comes back to the tab.
+        const onReturn = () => {
+            if (Date.now() - returnedAt < 1000) return;
+            returnedAt = Date.now();
+            update();
+        };
+        window.addEventListener('focus', onReturn);
+        document.addEventListener('visibilitychange', onReturn);
         return () => {
             if (channel) void client?.removeChannel(channel);
             clearInterval(timer);
-            window.removeEventListener('focus', update);
-            document.removeEventListener('visibilitychange', update);
+            window.removeEventListener('focus', onReturn);
+            document.removeEventListener('visibilitychange', onReturn);
         };
     }, [refresh, projectId]);
     async function act(action: string, payload: Record<string, unknown>) {
@@ -148,7 +156,9 @@ export function ProjectCollaborationProvider({
         onChanged();
     }
     return (
-        <CollaborationContext.Provider value={{ detail, userId, ownerId, itemIds, projectId, refresh, act }}>
+        <CollaborationContext.Provider
+            value={{ detail, userId, ownerId, itemIds, projectId, refresh, act }}
+        >
             {error && (
                 <p role="alert" className="rounded-xl border border-line p-3">
                     Не вдалося оновити обговорення: {error}{' '}
@@ -223,6 +233,15 @@ function Composer({
     const fileInput = useRef<HTMLInputElement>(null);
     const pending = useRef<Record<string, unknown> | null>(null);
     const lock = useRef(false);
+    // Unsent uploads may be removed; storage keeps files of saved records.
+    function discard(attachments: unknown) {
+        const paths = Array.isArray(attachments) ? attachments.map((a: Attachment) => a.path) : [];
+        if (paths.length)
+            void createSupabaseBrowserClient()
+                ?.storage.from('project-attachments')
+                .remove(paths)
+                .catch(() => {});
+    }
     async function submit(e: FormEvent) {
         e.preventDefault();
         if (lock.current) return;
@@ -230,6 +249,7 @@ function Composer({
         setBusy(true);
         setError('');
         setSuccess('');
+        const uploaded: Attachment[] = [];
         try {
             if (!pending.current) {
                 if (!payment && !body.trim() && !files.length)
@@ -257,6 +277,7 @@ function Composer({
                         .upload(path, file, { contentType: file.type, upsert: false });
                     if (r.error) throw r.error;
                     attachments.push({ path, name: file.name });
+                    uploaded.push({ path, name: file.name });
                 }
                 pending.current = payment
                     ? { id, amount, note: body, attachments }
@@ -275,12 +296,23 @@ function Composer({
                     : 'Коментар збережено.',
             );
         } catch (e) {
+            // The server rejected the record itself (it sets a code), so resending it cannot help.
+            if (e && typeof e === 'object' && 'code' in e && e.code) {
+                discard(pending.current?.attachments);
+                pending.current = null;
+            } else if (!pending.current) discard(uploaded);
             setError(message(e));
             setRetry(!!pending.current);
         } finally {
             lock.current = false;
             setBusy(false);
         }
+    }
+    function cancelRetry() {
+        discard(pending.current?.attachments);
+        pending.current = null;
+        setRetry(false);
+        setError('');
     }
     return (
         <form onSubmit={submit} className="mt-4 space-y-3">
@@ -340,15 +372,22 @@ function Composer({
                     {success}
                 </p>
             )}
-            <Button type="submit" variant="brand" disabled={busy}>
-                {busy
-                    ? 'Зберігаємо…'
-                    : retry
-                      ? 'Повторити збереження'
-                      : payment
-                        ? 'Повідомити про переказ'
-                        : 'Додати коментар'}
-            </Button>
+            <div className="flex flex-wrap gap-2">
+                <Button type="submit" variant="brand" disabled={busy}>
+                    {busy
+                        ? 'Зберігаємо…'
+                        : retry
+                          ? 'Повторити збереження'
+                          : payment
+                            ? 'Повідомити про переказ'
+                            : 'Додати коментар'}
+                </Button>
+                {retry && !busy && (
+                    <Button type="button" variant="outline" onClick={cancelRetry}>
+                        Скасувати й змінити
+                    </Button>
+                )}
+            </div>
         </form>
     );
 }
@@ -356,7 +395,11 @@ function Composer({
 export function ProjectComments({ itemId = null }: { itemId?: string | null }) {
     const ctx = useContext(CollaborationContext);
     if (!ctx) return null;
-    const comments = ctx.detail.comments.filter((c) => c.item_id === itemId || (itemId === null && c.item_id !== null && !ctx.itemIds.includes(c.item_id)));
+    const comments = ctx.detail.comments.filter(
+        (c) =>
+            c.item_id === itemId ||
+            (itemId === null && c.item_id !== null && !ctx.itemIds.includes(c.item_id)),
+    );
     return (
         <details
             className="mt-4 rounded-xl border border-line p-4"
@@ -373,7 +416,11 @@ export function ProjectComments({ itemId = null }: { itemId?: string | null }) {
                             {c.author_id === ctx.ownerId ? 'Майстер' : 'Замовник'} ·{' '}
                             {displayDate(c.created_at)}
                         </p>
-                        {c.item_id && !ctx.itemIds.includes(c.item_id) && <p className="mt-2 text-xs text-subtle">До видаленої роботи: {c.item_name ?? 'Робота'}</p>}
+                        {c.item_id && !ctx.itemIds.includes(c.item_id) && (
+                            <p className="mt-2 text-xs text-subtle">
+                                До видаленої роботи: {c.item_name ?? 'Робота'}
+                            </p>
+                        )}
                         <p className="mt-2 whitespace-pre-wrap break-words">{c.body}</p>
                         <Attachments files={c.attachments} />
                     </li>

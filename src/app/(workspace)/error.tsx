@@ -1,5 +1,5 @@
 'use client';
 import { ErrorScreen } from '@/components/error-screen';
-export default function WorkspaceError({ reset }: { reset: () => void }) {
-    return <ErrorScreen reset={reset} compact />;
+export default function WorkspaceError({ retry }: { retry: () => void }) {
+    return <ErrorScreen retry={retry} compact />;
 }

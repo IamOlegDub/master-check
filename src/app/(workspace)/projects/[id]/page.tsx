@@ -12,5 +12,5 @@ export default async function LegacyProject({ params }: { params: Promise<{ id: 
     if (r.error) throw Error('Не вдалося відкрити проєкт.');
     const path = projectHref(r.data.project);
     if (path !== `/projects/${id}`) redirect(path);
-    return renderProject(c, id);
+    return renderProject(c, id, r.data);
 }

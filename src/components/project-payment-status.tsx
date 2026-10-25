@@ -4,7 +4,8 @@ import { formatPrice } from '@/lib/price-list';
 export function ProjectPaymentStatus({ confirmed, paid }: { confirmed: number; paid: number }) {
     const due = Math.max(0, Math.round((confirmed - paid) * 100) / 100);
     const credit = Math.max(0, Math.round((paid - confirmed) * 100) / 100);
-    const percent = confirmed > 0 ? Math.min(100, Math.round((paid / confirmed) * 100)) : 0;
+    // Round down so a remaining debt never shows as 100% paid.
+    const percent = confirmed > 0 ? Math.min(100, Math.floor((paid / confirmed) * 100)) : 0;
     const Icon =
         due > 0 ? CircleDollarSign : credit > 0 ? Wallet : confirmed > 0 ? BadgeCheck : Clock3;
     const label =

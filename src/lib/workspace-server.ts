@@ -2,6 +2,7 @@ import 'server-only';
 import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { isTemporaryAuthError } from '@/lib/auth-redirect';
 import { profileFromUser, profileName } from '@/lib/profile';
 import type { Role } from '@/lib/workspace';
 
@@ -12,12 +13,7 @@ const getWorkspaceContext = cache(async () => {
         data: { user },
         error: authError,
     } = await supabase.auth.getUser();
-    if (
-        authError &&
-        (authError.name === 'AuthRetryableFetchError' ||
-            authError.status === 429 ||
-            (authError.status ?? 0) >= 500)
-    )
+    if (isTemporaryAuthError(authError))
         throw new Error(
             'Не вдалося перевірити сесію. Оновіть сторінку, повторний вхід не потрібен.',
         );
@@ -28,9 +24,7 @@ const getWorkspaceContext = cache(async () => {
         .eq('user_id', user.id)
         .maybeSingle();
     if (error)
-        throw new Error(
-            'Потрібно застосувати міграції робочого простору 202609230001, 202609230002 та 202609240001 у Supabase.',
-        );
+        throw new Error('Потрібно застосувати всі міграції з supabase/migrations у Supabase.');
     if (!account) redirect('/welcome');
     if (account.role === 'MASTER' && !account.username) redirect('/welcome');
     const profile = profileFromUser(user);
@@ -47,4 +41,16 @@ export async function workspaceContext(requireMaster = false) {
     const context = await getWorkspaceContext();
     if (requireMaster && context.role !== 'MASTER') redirect('/');
     return context;
+}
+export async function workspaceProjects(context: Awaited<ReturnType<typeof workspaceContext>>) {
+    const [projects, contacts] = await Promise.all([
+        context.supabase.rpc('workspace_projects'),
+        context.role === 'MASTER'
+            ? context.supabase.from('clients').select('*').order('name')
+            : Promise.resolve({ data: [], error: null }),
+    ]);
+    if (projects.error)
+        throw Error('Не вдалося завантажити проєкти. Перевірте міграції та з’єднання.');
+    if (contacts.error) throw Error('Не вдалося завантажити клієнтів.');
+    return { projects: projects.data ?? [], contacts: contacts.data ?? [] };
 }

@@ -75,7 +75,6 @@ export function ProjectWorkspace({
         [busy, setBusy] = useState(false),
         [invite, setInvite] = useState(''),
         [inviteEmail, setInviteEmail] = useState(''),
-        [clientFound, setClientFound] = useState<boolean | null>(null),
         [reason, setReason] = useState(''),
         [files, setFiles] = useState<File[]>([]),
         [showReport, setShowReport] = useState(false),
@@ -93,6 +92,17 @@ export function ProjectWorkspace({
     const uploading = useRef(false);
     const reportId = useRef('');
     const projectId = initial.project.id;
+    // The estimate keeps its own copy of the project. Remount it only when the project
+    // changed elsewhere, so its own saves keep their notice and do not reload twice.
+    const estimateVersion = useRef(initial.project.version);
+    const [estimateKey, setEstimateKey] = useState(0);
+    const apply = useCallback((next: WorkflowDetail) => {
+        if (next.project.version !== estimateVersion.current) {
+            estimateVersion.current = next.project.version;
+            setEstimateKey((key) => key + 1);
+        }
+        setData(next);
+    }, []);
     const reload = useCallback(async () => {
         const c = createSupabaseBrowserClient();
         if (!c) return;
@@ -101,11 +111,19 @@ export function ProjectWorkspace({
             setError(message(r.error));
             return;
         }
-        setData(r.data as WorkflowDetail);
-    }, [projectId]);
+        apply(r.data as WorkflowDetail);
+    }, [projectId, apply]);
     const changed = useCallback(() => {
         void reload();
     }, [reload]);
+    const estimateChanged = useCallback(
+        (project: { version: number }) => {
+            if (project.version === estimateVersion.current) return;
+            estimateVersion.current = project.version;
+            void reload();
+        },
+        [reload],
+    );
     async function action(name: string, payload: Record<string, unknown> = {}) {
         if (lock.current) return false;
         lock.current = true;
@@ -121,7 +139,7 @@ export function ProjectWorkspace({
                 p_payload: { ...payload, version: data.project.version },
             });
             if (r.error) throw r.error;
-            setData(r.data);
+            apply(r.data as WorkflowDetail);
             setNotice('Зміни збережено.');
             setReason('');
             return true;
@@ -131,27 +149,6 @@ export function ProjectWorkspace({
             return false;
         } finally {
             lock.current = false;
-            setBusy(false);
-        }
-    }
-    async function findClient() {
-        if (busy) return;
-        setBusy(true);
-        setError('');
-        setClientFound(null);
-        setInvite('');
-        try {
-            const c = createSupabaseBrowserClient();
-            if (!c) throw Error('Немає з’єднання.');
-            const r = await c.rpc('find_project_client', {
-                p_project_id: projectId,
-                p_email: inviteEmail,
-            });
-            if (r.error) throw r.error;
-            setClientFound(r.data.found);
-        } catch (e) {
-            setError(message(e));
-        } finally {
             setBusy(false);
         }
     }
@@ -165,11 +162,7 @@ export function ProjectWorkspace({
             const r = await c.rpc('make_invite', { p_project_id: projectId, p_email: inviteEmail });
             if (r.error) throw r.error;
             setInvite(`${location.origin}/invite/${r.data}`);
-            setNotice(
-                clientFound
-                    ? 'Запрошення з’явиться в кабінеті замовника.'
-                    : 'Запрошення прив’язане до вказаної пошти. Передайте посилання замовнику.',
-            );
+            setNotice('Запрошення прив’язане до вказаної пошти. Передайте посилання замовнику.');
         } catch (e) {
             setError(message(e));
         } finally {
@@ -193,7 +186,7 @@ export function ProjectWorkspace({
                 const check = await c.rpc('workflow_detail', { p_project_id: projectId });
                 if (check.error) throw check.error;
                 if ((check.data as WorkflowDetail).reports.some((r) => r.id === reportId.current)) {
-                    setData(check.data);
+                    apply(check.data as WorkflowDetail);
                     reportId.current = '';
                     setFiles([]);
                     setShowReport(false);
@@ -377,7 +370,7 @@ export function ProjectWorkspace({
                         <p className="mt-2 text-subtle">
                             {data.has_client
                                 ? 'Замовник підключений до проєкту.'
-                                : 'Знайдіть замовника за точною поштою входу. Запрошення може прийняти лише цей акаунт; посилання діє 7 днів.'}
+                                : 'Вкажіть точну пошту, з якою замовник входить у застосунок. Запрошення може прийняти лише цей акаунт; посилання діє 7 днів.'}
                         </p>
                         {p.status === 'DRAFT' && (
                             <label className="mt-4 block">
@@ -413,7 +406,6 @@ export function ProjectWorkspace({
                                         disabled={busy}
                                         onChange={(e) => {
                                             setInviteEmail(e.target.value);
-                                            setClientFound(null);
                                             setInvite('');
                                         }}
                                     />
@@ -421,32 +413,17 @@ export function ProjectWorkspace({
                                 <Button
                                     disabled={busy || !inviteEmail.trim()}
                                     variant="outline"
-                                    onClick={() => void findClient()}
+                                    onClick={() => void makeInvite()}
                                 >
-                                    Знайти в нашій базі
+                                    Створити запрошення
                                 </Button>
-                                {clientFound !== null && (
-                                    <p className="text-sm">
-                                        {clientFound
-                                            ? 'Акаунт замовника знайдено. Запрошення з’явиться в його кабінеті.'
-                                            : 'Акаунт замовника не знайдено. Створіть посилання та попросіть увійти з цією поштою як замовник.'}
-                                    </p>
-                                )}
+                                <p className="text-xs text-subtle">
+                                    Якщо замовник уже має акаунт із цією поштою, запрошення також
+                                    з’явиться в його кабінеті.
+                                </p>
                             </div>
                         )}
-                        {!data.has_client && clientFound !== null && (
-                            <Button
-                                className="mt-4"
-                                variant="outline"
-                                disabled={busy}
-                                onClick={() => void makeInvite()}
-                            >
-                                {clientFound
-                                    ? 'Запросити в застосунку'
-                                    : 'Створити посилання для замовника'}
-                            </Button>
-                        )}
-                        {invite && !data.has_client && clientFound === false && (
+                        {invite && !data.has_client && (
                             <ShareLink
                                 url={invite}
                                 title={`Запрошення: ${p.name}`}
@@ -785,12 +762,11 @@ export function ProjectWorkspace({
             </section>
             {owner && (tab === 'estimate' || tab === 'payments') ? (
                 <ProjectEstimate
-                    key={`${p.status}:${p.version}`}
+                    key={`${p.status}:${estimateKey}`}
                     projectId={projectId}
                     userId={userId}
-                    onProjectChange={changed}
+                    onProjectChange={estimateChanged}
                     openPriceList={() => router.push('/services')}
-                    workflowMode
                     estimateLocked={p.status !== 'DRAFT' && p.status !== 'PENDING_APPROVAL'}
                     onRevise={p.status === 'COMPLETED' ? undefined : () => setShowRevision(true)}
                     view={tab}

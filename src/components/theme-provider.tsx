@@ -20,7 +20,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             const dark = value === 'dark' || (value === 'system' && media.matches);
             document.documentElement.classList.toggle('dark', dark);
             document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
-            document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#111522' : '#ffffff');
+            document
+                .querySelector('meta[name="theme-color"]')
+                ?.setAttribute('content', dark ? '#111522' : '#ffffff');
         };
         sync();
         media.addEventListener('change', sync);
@@ -40,7 +42,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             (value === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.classList.toggle('dark', dark);
         document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
-        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#111522' : '#ffffff');
+        document
+            .querySelector('meta[name="theme-color"]')
+            ?.setAttribute('content', dark ? '#111522' : '#ffffff');
     };
     return <ThemeContext.Provider value={{ theme, change }}>{children}</ThemeContext.Provider>;
 }

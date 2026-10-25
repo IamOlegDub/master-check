@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { useState } from 'react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { message } from '@/lib/workspace';
@@ -57,9 +58,9 @@ export function AcceptInvite({ token }: { token: string }) {
             >
                 Увійти іншим акаунтом
             </button>
-            <a href="/" className="mt-6 block underline">
+            <Link href="/" className="mt-6 block underline">
                 До робочого простору
-            </a>
+            </Link>
         </main>
     );
 }

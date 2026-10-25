@@ -149,20 +149,21 @@ test('collaboration migrations enforce roles, invitations, approvals, partial re
                 request: crypto.randomUUID(),
             }),
         );
-        await assert.rejects(() =>
-            rpc('project_mutate', {
-                project,
-                action: 'edit_item',
-                payload: JSON.stringify({
-                    item_id: item,
-                    quantity: 1,
-                    unit_price: 400,
-                    version: d.project.version,
-                }),
-                request: crypto.randomUUID(),
+        // A pending estimate stays editable; approval must then refer to the latest version.
+        await rpc('project_mutate', {
+            project,
+            action: 'edit_item',
+            payload: JSON.stringify({
+                item_id: item,
+                quantity: 400,
+                unit_price: 400,
+                version: d.project.version,
             }),
-        );
+            request: crypto.randomUUID(),
+        });
         await as(client);
+        await assert.rejects(() => action('approve'));
+        d = await rpc('workflow_detail', { project });
         await action('approve');
         assert.equal(d.project.status, 'IN_PROGRESS');
         assert.equal(d.project.approved_estimate[0].unit_price, 400);

@@ -1,5 +1,5 @@
 ﻿'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
 import { Menu } from '@base-ui/react/menu';
 import { MoreVertical, Trash2 } from 'lucide-react';
@@ -23,6 +23,7 @@ export function PhotoGallery({
         [active, setActive] = useState<number | null>(null),
         [list, setList] = useState(false),
         [retry, setRetry] = useState(0);
+    const signedAt = useRef(0);
     const photos = preview ? allPhotos.slice(0, 3) : allPhotos;
     const signature = photos.map((p) => p.path).join('|');
     useEffect(() => {
@@ -31,7 +32,7 @@ export function PhotoGallery({
         if (!signature) return;
         void c?.storage
             .from(bucket)
-            .createSignedUrls(signature.split('|'), 300)
+            .createSignedUrls(signature.split('|'), 3600)
             .then((r) => {
                 if (!live) return;
                 if (r.error || r.data?.some((p) => p.error)) {
@@ -39,6 +40,7 @@ export function PhotoGallery({
                     return;
                 }
                 setError('');
+                signedAt.current = Date.now();
                 setUrls(
                     Object.fromEntries(
                         (r.data ?? [])
@@ -87,11 +89,16 @@ export function PhotoGallery({
                                     src={urls[photo.path] || undefined}
                                     alt={photo.caption || `Фото роботи ${index + 1}`}
                                     loading="lazy"
-                                    onError={() =>
-                                        setError(
-                                            'Не вдалося завантажити фото. Натисніть «Оновити фото».',
-                                        )
-                                    }
+                                    onError={() => {
+                                        // Signed links expire: fetch fresh ones before showing an error.
+                                        if (Date.now() - signedAt.current > 60000) {
+                                            signedAt.current = Date.now();
+                                            setRetry((x) => x + 1);
+                                        } else
+                                            setError(
+                                                'Не вдалося завантажити фото. Натисніть «Оновити фото».',
+                                            );
+                                    }}
                                     className={
                                         list && !preview
                                             ? 'max-h-[65svh] w-full object-contain'
@@ -125,7 +132,7 @@ export function PhotoGallery({
                                         <Menu.Popup className="min-w-40 rounded-xl border border-line bg-card p-1.5 shadow-lg">
                                             <Menu.Item
                                                 onClick={() => onDelete(photo)}
-                                                className="flex cursor-pointer items-center gap-2 rounded-lg p-3 text-sm text-red-700 dark:text-red-300 outline-none data-highlighted:bg-red-50 dark:bg-red-950"
+                                                className="flex cursor-pointer items-center gap-2 rounded-lg p-3 text-sm text-red-700 dark:text-red-300 outline-none data-highlighted:bg-red-50 dark:data-highlighted:bg-red-950"
                                             >
                                                 <Trash2 size={17} />
                                                 Видалити
@@ -163,7 +170,7 @@ export function PhotoGallery({
                             <button
                                 disabled={busy}
                                 aria-label="Видалити це фото"
-                                className="absolute top-2 left-2 flex size-12 items-center justify-center rounded-xl bg-card/15 text-white hover:bg-red-600 dark:bg-red-950"
+                                className="absolute top-2 left-2 flex size-12 items-center justify-center rounded-xl bg-card/15 text-white hover:bg-red-600"
                                 onClick={() => {
                                     const photo = photos[active];
                                     setActive(null);

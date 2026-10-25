@@ -14,3 +14,13 @@ export function safeReturnPath(value: string | null | undefined) {
         return '/';
     }
 }
+
+// A temporary auth outage must not look like a logout: keep the session and let the user retry.
+export function isTemporaryAuthError(error: { name?: string; status?: number } | null) {
+    return (
+        !!error &&
+        (error.name === 'AuthRetryableFetchError' ||
+            error.status === 429 ||
+            (error.status ?? 0) >= 500)
+    );
+}

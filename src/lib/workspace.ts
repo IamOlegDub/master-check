@@ -29,6 +29,9 @@ export type WorkspaceProject = {
 export type Contact = { id: string; name: string; phone: string; notes: string };
 export const inputClass =
     'mt-2 block w-full min-w-0 rounded-xl border border-line bg-card px-3 py-3 text-base text-ink outline-none focus:border-brand disabled:opacity-60';
+// Denser field used by the price list and estimate forms.
+export const compactInputClass =
+    'workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]';
 export const panelClass = 'min-w-0 rounded-2xl border border-line bg-card p-5 sm:p-6';
 export function message(error: unknown) {
     return error && typeof error === 'object' && 'message' in error

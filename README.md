@@ -36,7 +36,7 @@ pnpm test
 pnpm build
 ```
 
-The installed combination of ESLint 10 and eslint-plugin-react has a `contextOrFilename.getFilename` incompatibility. Running `pnpm lint` requires these dependencies to be aligned separately.
+`pnpm lint` runs on ESLint 9: `eslint-plugin-react`, which `eslint-config-next` pulls in, does not support ESLint 10 yet.
 
 To deploy, add the variables from `.env.example` to your hosting settings and allow your domain's callback URL in Supabase Auth. Secret keys and `.env.local` are not stored in Git.
 

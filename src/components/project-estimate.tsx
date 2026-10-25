@@ -14,7 +14,6 @@ import {
     type Service,
     type ServiceCategory,
 } from '@/lib/price-list';
-import { projectStatuses, type Project } from '@/lib/projects';
 import {
     calculateLineTotal,
     displayDate,
@@ -27,6 +26,7 @@ import {
     type ProjectEvent,
     type ProjectPayment,
 } from '@/lib/estimates';
+import { compactInputClass } from '@/lib/workspace';
 
 type Action = { kind: string; item?: EstimateItem; payment?: ProjectPayment };
 type Request = { action: string; payload: Record<string, unknown>; id: string };
@@ -68,16 +68,14 @@ export function ProjectEstimate({
     userId,
     onProjectChange,
     openPriceList,
-    workflowMode = false,
     estimateLocked = false,
     onRevise,
     view = 'estimate',
 }: {
     projectId: string;
     userId: string;
-    onProjectChange: (project: Project) => void;
+    onProjectChange: (project: ProjectDetail['project']) => void;
     openPriceList: () => void;
-    workflowMode?: boolean;
     estimateLocked?: boolean;
     onRevise?: () => void;
     view?: 'estimate' | 'payments';
@@ -301,7 +299,6 @@ export function ProjectEstimate({
             amount,
             occurred_at: parsed.toISOString(),
             note: actionNote,
-            completed: action.kind === 'complete_item' ? !action.item?.completed_at : undefined,
         });
     }
 
@@ -312,25 +309,7 @@ export function ProjectEstimate({
         >
             <div className="panel-heading flex justify-between items-start gap-4 pt-[25px] px-6 pb-5 [&_h2]:flex [&_h2]:items-center [&_h2]:gap-[9px] [&_h2]:text-[16px] [&_h2]:font-semibold [&_h2]:tracking-[-.03em] [&_p]:text-subtle [&_p]:text-[11px] [&_p]:mt-[7px] max-[761px]:pt-[21px] max-[761px]:px-4.5 max-[761px]:pb-4.5 estimate-heading px-0! [&_h2]:text-[23px]! [&_h2]:mt-2! [&_h2]:wrap-anywhere!">
                 <div>
-                    <span
-                        hidden={workflowMode}
-                        className="eyebrow block text-[var(--tone-text-89859e)] text-[9px] font-semibold tracking-[.13em]"
-                    >
-                        {view === 'payments' ? 'ОПЛАТИ ТА АВАНСИ' : 'ПЛАН РОБІТ'}
-                    </span>
-                    <h2>
-                        {workflowMode
-                            ? view === 'payments'
-                                ? 'Оплати та аванси'
-                                : 'План робіт'
-                            : (detail?.project.name ?? 'Завантажуємо проєкт…')}
-                    </h2>
-                    {detail && !workflowMode && (
-                        <p>
-                            Створено {displayDate(detail.project.created_at)} · оновлено{' '}
-                            {displayDate(detail.project.updated_at)}
-                        </p>
-                    )}
+                    <h2>{view === 'payments' ? 'Оплати та аванси' : 'План робіт'}</h2>
                 </div>
                 <Button
                     variant="outline"
@@ -387,18 +366,14 @@ export function ProjectEstimate({
                             className="estimate-summary grid grid-cols-2 gap-3 [&_>_div]:bg-[var(--tone-bg-ffffff)] [&_>_div]:border [&_>_div]:border-line [&_>_div]:rounded-[12px] [&_>_div]:p-4.5 [&_>_div]:min-w-0 [&_span]:block [&_span]:text-[11px] [&_span]:text-subtle [&_strong]:block [&_strong]:text-[20px] [&_strong]:mt-2.5 [&_strong]:font-[550] [&_strong]:tabular-nums [&_strong]:wrap-anywhere max-[901px]:grid-cols-2 max-[601px]:[&_strong]:text-[17px]"
                         >
                             {[
-                                ['Кошторис', detail.project.total],
-                                ['Отримано від замовника', detail.project.paid],
                                 ['Залишок за планом', balance.remaining],
                                 ['Нерозподілений аванс', balance.unallocated],
-                            ]
-                                .filter((_, index) => !workflowMode || index > 1)
-                                .map(([label, value]) => (
-                                    <div key={label}>
-                                        <span>{label}</span>
-                                        <strong>{formatPrice(Number(value))}</strong>
-                                    </div>
-                                ))}
+                            ].map(([label, value]) => (
+                                <div key={label}>
+                                    <span>{label}</span>
+                                    <strong>{formatPrice(Number(value))}</strong>
+                                </div>
+                            ))}
                         </div>
                         {view === 'payments' && balance.overpaid > 0 && (
                             <p className="workspace-notice rounded-[10px] py-[15px] px-4.5 text-[12px] leading-[1.6] text-[var(--tone-text-34755c)] bg-[var(--tone-bg-edf7f1)] border border-[var(--tone-border-d7eddf)]">
@@ -416,24 +391,6 @@ export function ProjectEstimate({
                             не потрібно.
                         </p>
                         <div className="estimate-toolbar flex items-end justify-between gap-[15px] flex-wrap [&_label]:text-[12px] [&_label]:text-subtle [&_>_div]:flex [&_>_div]:gap-2.5 [&_>_div]:flex-wrap max-[601px]:[&_>_div]:w-full max-[601px]:[&_>_div_>_button]:flex-1">
-                            {!workflowMode && (
-                                <label>
-                                    Статус проєкту
-                                    <select
-                                        aria-label="Статус проєкту"
-                                        className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
-                                        value={detail.project.status}
-                                        disabled={disabled}
-                                        onChange={(event) =>
-                                            void mutate('status', { status: event.target.value })
-                                        }
-                                    >
-                                        {projectStatuses.map((status) => (
-                                            <option key={status}>{status}</option>
-                                        ))}
-                                    </select>
-                                </label>
-                            )}
                             <div>
                                 <Button
                                     variant="outline"
@@ -534,7 +491,7 @@ export function ProjectEstimate({
                                                                 Пошук у прайсі
                                                             </span>
                                                             <input
-                                                                className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
+                                                                className={compactInputClass}
                                                                 value={search}
                                                                 onChange={(event) => {
                                                                     setSearch(event.target.value);
@@ -632,7 +589,7 @@ export function ProjectEstimate({
                                                         <label className="sm:col-span-2">
                                                             Послуга
                                                             <select
-                                                                className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
+                                                                className={compactInputClass}
                                                                 required
                                                                 value={serviceId}
                                                                 onChange={(event) =>
@@ -665,7 +622,7 @@ export function ProjectEstimate({
                                                         ? `(${serviceUnits[(editing ?? selectedService)!.unit]})`
                                                         : ''}
                                                     <input
-                                                        className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
+                                                        className={compactInputClass}
                                                         type="number"
                                                         min="0.001"
                                                         max="999999999.999"
@@ -680,7 +637,7 @@ export function ProjectEstimate({
                                                 <label>
                                                     Ціна за одиницю, ₴
                                                     <input
-                                                        className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
+                                                        className={compactInputClass}
                                                         type="number"
                                                         min="0"
                                                         max="9999999999"
@@ -700,7 +657,7 @@ export function ProjectEstimate({
                                                 <label>
                                                     Знижка / націнка, %
                                                     <input
-                                                        className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
+                                                        className={compactInputClass}
                                                         type="number"
                                                         min="-100"
                                                         max="1000"
@@ -718,7 +675,7 @@ export function ProjectEstimate({
                                                 <label>
                                                     Примітка
                                                     <input
-                                                        className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
+                                                        className={compactInputClass}
                                                         value={note}
                                                         onChange={(event) =>
                                                             setNote(event.target.value)
@@ -789,13 +746,9 @@ export function ProjectEstimate({
                                                         : 'Аванс за весь проєкт'
                                                     : action.kind === 'allocate'
                                                       ? 'Зарахувати отриманий аванс'
-                                                      : action.kind === 'complete_item'
-                                                        ? action.item?.completed_at
-                                                            ? 'Повернути роботу до невиконаних'
-                                                            : 'Позначити роботу виконаною'
-                                                        : action.kind === 'void_payment'
-                                                          ? 'Скасувати помилковий запис оплати'
-                                                          : 'Повернути аванс до нерозподіленого залишку'}
+                                                      : action.kind === 'void_payment'
+                                                        ? 'Скасувати помилковий запис оплати'
+                                                        : 'Повернути аванс до нерозподіленого залишку'}
                                             </h2>
                                             <p>
                                                 {action.item?.name ??
@@ -813,7 +766,7 @@ export function ProjectEstimate({
                                                 <label>
                                                     Сума, ₴
                                                     <input
-                                                        className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
+                                                        className={compactInputClass}
                                                         type="number"
                                                         min="0.01"
                                                         step="0.01"
@@ -848,7 +801,7 @@ export function ProjectEstimate({
                                             <label>
                                                 Дата й час події
                                                 <input
-                                                    className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
+                                                    className={compactInputClass}
                                                     type="datetime-local"
                                                     value={date}
                                                     onChange={(event) =>
@@ -863,7 +816,7 @@ export function ProjectEstimate({
                                                     ? 'Причина скасування'
                                                     : 'Примітка'}
                                                 <input
-                                                    className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
+                                                    className={compactInputClass}
                                                     value={actionNote}
                                                     onChange={(event) =>
                                                         setActionNote(event.target.value)
@@ -1049,34 +1002,6 @@ export function ProjectEstimate({
                                                     hidden={view !== 'payments'}
                                                     className="estimate-item-states flex gap-3 items-center flex-wrap"
                                                 >
-                                                    {!workflowMode && (
-                                                        <>
-                                                            <button
-                                                                role="checkbox"
-                                                                aria-checked={!!item.completed_at}
-                                                                className="estimate-check inline-flex gap-[7px] items-center text-[11px] [&_>_span]:w-[19px] [&_>_span]:h-[19px] [&_>_span]:border [&_>_span]:border-[var(--tone-border-c8c3d9)] [&_>_span]:rounded-[5px] [&_>_span]:inline-flex [&_>_span]:items-center [&_>_span]:justify-center [&[aria-checked=true]_>_span]:bg-[#6155db] [&[aria-checked=true]_>_span]:border-[var(--tone-border-6155db)] [&[aria-checked=true]_>_span]:text-[white] [&[aria-checked=mixed]_>_span]:bg-[#6155db] [&[aria-checked=mixed]_>_span]:border-[var(--tone-border-6155db)] [&[aria-checked=mixed]_>_span]:text-[white]"
-                                                                disabled={disabled}
-                                                                onClick={() =>
-                                                                    openAction({
-                                                                        kind: 'complete_item',
-                                                                        item,
-                                                                    })
-                                                                }
-                                                            >
-                                                                <span>
-                                                                    {item.completed_at && (
-                                                                        <Check size={13} />
-                                                                    )}
-                                                                </span>
-                                                                Виконано
-                                                            </button>
-                                                            <span className="estimate-meta text-[10px] text-subtle">
-                                                                {item.completed_at
-                                                                    ? displayDate(item.completed_at)
-                                                                    : 'Ще в роботі'}
-                                                            </span>
-                                                        </>
-                                                    )}
                                                     <button
                                                         role="checkbox"
                                                         aria-checked={

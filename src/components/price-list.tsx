@@ -26,6 +26,7 @@ import {
     type ServiceSort,
     type ServiceUnit,
 } from '@/lib/price-list';
+import { compactInputClass } from '@/lib/workspace';
 
 export function PriceList({ userId, userName }: { userId: string; userName: string }) {
     const [categories, setCategories] = useState<ServiceCategory[]>([]);
@@ -370,7 +371,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                         ? 'Нова назва категорії'
                                         : 'Назва нової категорії'}
                                     <input
-                                        className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
+                                        className={compactInputClass}
                                         value={categoryName}
                                         onChange={(event) => setCategoryName(event.target.value)}
                                         placeholder="Наприклад, сантехніка"
@@ -472,7 +473,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                             <input
                                                 autoFocus
                                                 name="name"
-                                                className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
+                                                className={compactInputClass}
                                                 required
                                                 maxLength={160}
                                                 defaultValue={editing?.name ?? ''}
@@ -483,7 +484,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                             Категорія
                                             <select
                                                 name="category_id"
-                                                className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
+                                                className={compactInputClass}
                                                 required
                                                 defaultValue={
                                                     editing?.category_id ??
@@ -501,7 +502,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                             Ціна за одиницю, ₴
                                             <input
                                                 name="price"
-                                                className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
+                                                className={compactInputClass}
                                                 type="number"
                                                 inputMode="decimal"
                                                 min="0"
@@ -516,7 +517,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                             Одиниця виміру
                                             <select
                                                 name="unit"
-                                                className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
+                                                className={compactInputClass}
                                                 defaultValue={editing?.unit ?? 'm2'}
                                             >
                                                 {Object.entries(serviceUnits).map(
@@ -869,7 +870,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                     <label>
                                         Ім’я майстра або компанія
                                         <input
-                                            className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
+                                            className={compactInputClass}
                                             value={pdfName}
                                             onChange={(event) => setPdfName(event.target.value)}
                                             maxLength={160}
@@ -881,7 +882,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                             необов’язково
                                         </span>
                                         <input
-                                            className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
+                                            className={compactInputClass}
                                             value={pdfContact}
                                             onChange={(event) => setPdfContact(event.target.value)}
                                             maxLength={160}
@@ -891,7 +892,7 @@ export function PriceList({ userId, userName }: { userId: string; userName: stri
                                     <label>
                                         Що включити в PDF
                                         <select
-                                            className="workspace-input block w-full border border-[var(--tone-border-e2e4ed)] rounded-[8px] bg-[var(--tone-bg-fcfcfe)] py-[11px] px-3 mt-2 text-ink text-[13px] font-normal outline-none [transition:border-color_.15s] [&::placeholder]:text-[var(--tone-text-a1a4b0)] [&:focus]:border-[var(--tone-border-9b8ee1)] [&:focus]:bg-[var(--tone-bg-ffffff)] max-[761px]:text-[16px]"
+                                            className={compactInputClass}
                                             value={exportScope}
                                             onChange={(event) => setExportScope(event.target.value)}
                                         >

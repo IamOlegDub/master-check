@@ -149,6 +149,22 @@ export function PortfolioManager({
             setBusy(false);
         }
     }
+    async function rotate(album?: Album) {
+        if (!confirm('Створити нове посилання? Старе перестане працювати.')) return;
+        setBusy(true);
+        setError('');
+        try {
+            if (album) {
+                await mutate('rotate_album', { id: album.id });
+                await reload();
+            } else setToken((await mutate('rotate_all', {})).token);
+            setOrigin(location.origin);
+        } catch (e) {
+            setError(message(e));
+        } finally {
+            setBusy(false);
+        }
+    }
     async function remove(album: Album, photo?: Photo, all = false) {
         setBusy(true);
         setError('');
@@ -214,11 +230,19 @@ export function PortfolioManager({
                 <h2 className="text-lg font-semibold">Посилання на все портфоліо</h2>
                 <p className="my-3 text-xs text-subtle">
                     За ним видно тільки опубліковані альбоми. Після приховування й повторної
-                    публікації адреса залишається тією самою.
+                    публікації адреса залишається тією самою. Якщо посилання потрапило не до тих
+                    людей, змініть його — старе перестане працювати.
                 </p>
-                <Button disabled={busy} variant="outline" onClick={() => void all()}>
-                    {sharing ? 'Вимкнути публічне портфоліо' : 'Увімкнути публічне портфоліо'}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                    <Button disabled={busy} variant="outline" onClick={() => void all()}>
+                        {sharing ? 'Вимкнути публічне портфоліо' : 'Увімкнути публічне портфоліо'}
+                    </Button>
+                    {sharing && (
+                        <Button disabled={busy} variant="ghost" onClick={() => void rotate()}>
+                            Змінити посилання
+                        </Button>
+                    )}
+                </div>
                 {sharing &&
                     (origin ? (
                         <ShareLink url={`${origin}/share/${token}`} title="Моє портфоліо" />
@@ -327,6 +351,15 @@ export function PortfolioManager({
                             >
                                 {album.published ? 'Приховати' : 'Опублікувати'}
                             </Button>
+                            {album.published && (
+                                <Button
+                                    disabled={busy}
+                                    variant="ghost"
+                                    onClick={() => void rotate(album)}
+                                >
+                                    Змінити посилання
+                                </Button>
+                            )}
                             <Button
                                 disabled={busy}
                                 variant="ghost"

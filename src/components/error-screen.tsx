@@ -1,6 +1,6 @@
 'use client';
 import { CloudOff, RotateCw } from 'lucide-react';
-export function ErrorScreen({ reset, compact = false }: { reset: () => void; compact?: boolean }) {
+export function ErrorScreen({ retry, compact = false }: { retry: () => void; compact?: boolean }) {
     return (
         <div
             className={`grid place-items-center bg-[var(--tone-bg-f7f8fb)] p-6 text-ink ${compact ? 'min-h-96' : 'min-h-dvh'}`}
@@ -20,11 +20,13 @@ export function ErrorScreen({ reset, compact = false }: { reset: () => void; com
                 </p>
                 <button
                     className="mt-7 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-solid)] p-3 text-white"
-                    onClick={reset}
+                    onClick={retry}
                 >
                     <RotateCw size={18} />
                     Спробувати знову
                 </button>
+                {/* A full page load also clears client state left by the error. */}
+                {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
                 <a href="/" className="mt-4 block text-center text-sm text-subtle underline">
                     До робочого простору
                 </a>

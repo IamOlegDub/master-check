@@ -2,7 +2,7 @@
 
 ## English
 
-Apply unapplied SQL migrations in filename order before deploying this version. The latest is `202609240001_readable_urls_and_media.sql`; it requires both `202609230001_collaboration.sql` and `202609230002_portfolio.sql`, plus the earlier project, price-list, estimate and avatar migrations. Do not rerun migrations already applied. No additional environment variables are needed.
+Apply unapplied SQL migrations from the [ordered list](../supabase/README.md#порядок-міграцій) in filename order. Do not rerun migrations already applied. No additional environment variables are needed.
 
 Existing accounts retain the MASTER role and choose a unique username at their next sign-in. New accounts choose MASTER or CLIENT. A project invitation creates the CLIENT role if no role has been selected. Roles and usernames cannot be changed through the app. Google authentication remains enabled; phone numbers are contact information, not a login method.
 
@@ -16,9 +16,9 @@ Current balance = confirmed report amounts − non-voided payments. A negative b
 
 Clients are private contact cards with name, phone, notes and project links. A contact card does not grant access: use a seven-day, single-use invitation from Access. Generating another invite revokes the previous unused one. Share controls open Telegram, Viber, SMS or the device share dialog; nothing is sent automatically.
 
-Portfolio albums are private until published. Album and whole-portfolio URLs stay the same when hidden and republished. A whole-portfolio link shows only published albums. Photo menus support individual deletion and a confirmation dialog for deleting all photos in an album. Project report photos remain part of the audit history.
+Portfolio albums are private until published. Album and whole-portfolio URLs stay the same when hidden and republished; «Змінити посилання» replaces a leaked one and the old URL stops working. A whole-portfolio link shows only published albums. Photo menus support individual deletion and a confirmation dialog for deleting all photos in an album. Project report photos remain part of the audit history.
 
-Photo input limit: 10 MB each, 10 files per upload. The browser downscales to 2048 px and produces WebP (PNG fallback), up to 5 MB stored per photo. Each project or album has one optional overview video, MP4/H.264 or WebM up to 50 MB. Uploading another replaces it. Videos are not transcoded. Files live in private Supabase Storage buckets; database rows contain paths and metadata. Signed photo links expire after five minutes, video links after one hour. Hiding an album prevents new access, but previously issued links can last until expiry.
+Photo input limit: 10 MB each, 10 files per upload. The browser downscales to 2048 px and produces WebP (PNG fallback), up to 5 MB stored per photo. Each project or album has one optional overview video, MP4/H.264 or WebM up to 50 MB. Uploading another replaces it. Videos are not transcoded. Files live in private Supabase Storage buckets; database rows contain paths and metadata. Signed photo and video links expire after one hour; galleries request fresh photo links when old ones expire. Hiding an album prevents new access, but previously issued links can last until expiry.
 
 The PWA can be installed from the browser or Settings. It requires an internet connection for workspace data. The service worker caches only the offline page and icons, not private pages, photos or financial data. Chat and AI estimate recognition remain Phase 2.
 
@@ -26,13 +26,7 @@ The PWA can be installed from the browser or Settings. It requires an internet c
 
 ### Оновлення бази
 
-У **Supabase → SQL Editor → New query** виконайте лише ще не застосовані файли, за порядком:
-
-1. `202609230001_collaboration.sql` — ролі, клієнти, запрошення, погодження та звіти.
-2. `202609230002_portfolio.sql` — альбоми й фото портфоліо.
-3. `202609240001_readable_urls_and_media.sql` — username, адреси проєктів, виправлення доступу до завантаження фотозвітів, стабільні публічні посилання й оглядові відео.
-
-Вони потребують попередніх міграцій із каталогу `supabase/migrations`, включно з аватарками. Якщо перші два файли вже виконані, запускайте лише третій. Раніше застосовані міграції повторювати не потрібно. Нових env-змінних немає; Storage buckets і політики створюються SQL-міграціями. Хмарна база не змінюється запуском локальних тестів.
+У **Supabase → SQL Editor → New query** виконайте лише ще не застосовані файли за [повним списком міграцій](../supabase/README.md#порядок-міграцій). Раніше застосовані міграції повторювати не потрібно. Нових env-змінних немає; Storage buckets і політики створюються SQL-міграціями. Хмарна база не змінюється запуском локальних тестів.
 
 ### Як користуватися
 
@@ -51,13 +45,13 @@ The PWA can be installed from the browser or Settings. It requires an internet c
 
 ### Портфоліо, фото й відео
 
-Альбоми приватні до публікації. Посилання альбому та всього портфоліо не змінюється після приховування й повторної публікації. Загальне посилання показує лише опубліковані альбоми. Надсилання в Telegram/Viber/SMS відбувається тільки після дії користувача.
+Альбоми приватні до публікації. Посилання альбому та всього портфоліо не змінюється після приховування й повторної публікації. Якщо посилання потрапило не туди, «Змінити посилання» створює нове, а старе перестає працювати. Загальне посилання показує лише опубліковані альбоми. Надсилання в Telegram/Viber/SMS відбувається тільки після дії користувача.
 
 На мініатюрі фото є меню «⋮ → Видалити», у великому перегляді — іконка кошика. «Видалити всі фото» потребує підтвердження та залишає альбом і відео. Фото надісланих робочих звітів зберігаються як частина історії погоджень.
 
 Вхідне фото — до **10 МБ**, до десяти за раз. Перед відправленням воно оптимізується до 2048 px у WebP (або PNG), у Storage зберігається копія до 5 МБ. Оригінал до бази не відправляється. Кожен проєкт і кожен альбом може мати **одне оглядове відео до 50 МБ**, MP4/H.264 або WebM. Новий файл замінює попередній; автоматичного перекодування відео немає.
 
-Файли зберігаються в приватних buckets `reports`, `portfolio`, `overview-video`; у таблицях — адреси та метадані. Виданий підписаний URL фото діє до п’яти хвилин, відео — до години. Після приховування нові посилання недоступні, але вже видані можуть працювати до завершення строку.
+Файли зберігаються в приватних buckets `reports`, `portfolio`, `overview-video`; у таблицях — адреси та метадані. Виданий підписаний URL фото й відео діє до години; галерея сама отримує нові посилання, коли старі спливли. Після приховування нові посилання недоступні, але вже видані можуть працювати до завершення строку.
 
 ### PWA та межі MVP
 
@@ -75,10 +69,10 @@ The PWA can be installed from the browser or Settings. It requires an internet c
 
 Після попередніх міграцій застосуйте **один раз** `supabase/migrations/202609270001_comments_payments_invites.sql`. Вона створює таблиці коментарів і повідомлень про перекази, приватний bucket `project-attachments`, RPC та політики доступу. Якщо існує публікація `supabase_realtime`, до неї додаються відповідні таблиці. Інтерфейс використовує Realtime та резервне оновлення кожні 10 секунд, а також після повернення у вкладку. Push-повідомлення поза застосунком не додаються.
 
-Старі невикористані запрошення відкликаються: створіть нові з конкретною поштою. Уже підключені замовники зберігають доступ. Пошук замовника виконується в базі лише за повною точною поштою. Знайдений замовник отримує запрошення в кабінеті; якщо його ще немає — майстер може передати адресне посилання. Прийняти його може тільки акаунт із тією самою підтвердженою поштою. Картка контакту та знання URL самі по собі доступу не дають. Телефон залишається необов’язковим контактним полем: для ідентифікації через телефон потрібно окремо підключити SMS-перевірку, довільний номер у профілі недостатній.
+Старі невикористані запрошення відкликаються: створіть нові з конкретною поштою. Уже підключені замовники зберігають доступ. Майстер створює запрошення на повну точну пошту замовника й передає посилання. Якщо в замовника вже є акаунт із цією поштою, запрошення також з’являється в його кабінеті. Застосунок не повідомляє майстру, чи зареєстрована пошта. Прийняти його може тільки акаунт із тією самою підтвердженою поштою. Картка контакту та знання URL самі по собі доступу не дають. Телефон залишається необов’язковим контактним полем: для ідентифікації через телефон потрібно окремо підключити SMS-перевірку, довільний номер у профілі недостатній.
 
 - У «Кошторисі» майстер надсилає список на погодження, а замовник затверджує або повертає з поясненням. «Доступ» показується лише майстру.
-- Під кожною роботою є власні коментарі. У «Обговоренні» — коментарі до всього проєкту та системні події. Обидві сторони можуть відповідати новими записами. UPDATE/DELETE коментарів заборонені в базі; редагування чи видалення вкладень також недоступне.
+- Під кожною роботою є власні коментарі. У «Обговоренні» — коментарі до всього проєкту та системні події. Обидві сторони можуть відповідати новими записами. UPDATE/DELETE коментарів заборонені в базі; вкладення збережених записів не можна змінити чи видалити. Незбережені завантаження автор може прибрати («Скасувати й змінити»); на один проєкт у кожного учасника може бути до 30 таких файлів.
 - Вкладення: до 10 файлів по 100 МБ, JPEG/PNG/WebP/HEIC, MP4/WebM/MOV, PDF/TXT/ZIP/DOCX/XLSX. Фактичний ліміт може бути нижчим через глобальні налаштування Storage; перевірте, що вони дозволяють 100 МБ. Вкладення завантажуються через короткочасні підписані посилання (60 секунд). Перекодування відео та попередній перегляд офісних документів не виконуються.
 - Звичайна оплата майстра одразу змінює баланс і створює системну подію, замовник нічого не підтверджує. У «Оплатах» замовник може «Повідомити про переказ»: сума, необов’язковий коментар і чек. Такий запис не змінює баланс. «Підтвердити й зарахувати» від майстра атомарно створює одну офіційну оплату. Повторне натискання безпечне. Переказ зараховується як аванс проєкту; майстер може розподілити його на роботи наявною дією. Помилкову офіційну оплату можна скасувати з причиною; історія та початкове повідомлення залишаються.
 - Пошук послуг починається з трьох символів і шукає точні початки слів у назві. «пли» знаходить «Укладання плитки», але не «електроплитки». Для кількох слів мають збігатися всі введені частини. До трьох символів зберігається звичайний список категорії.

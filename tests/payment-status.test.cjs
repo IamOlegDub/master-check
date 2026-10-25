@@ -19,6 +19,7 @@ test('payment cards distinguish debt, partial payment, settlement, advance and n
     assert.match(partial, /300,00/);
     assert.match(render(500, 500), /Підтверджені роботи оплачені/);
     assert.match(render(500, 700), /Аванс на наступні роботи: 200,00/);
+    assert.match(render(1000, 999.99), /оплачено 99%/);
     assert.doesNotMatch(render(0, 200), /<progress/);
     assert.match(render(0, 0), /Ще немає підтверджених робіт/);
 });
